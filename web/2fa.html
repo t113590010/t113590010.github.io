@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        .block:hover {
+            transform: scale(1.1);
+        }
+    </style>
+    <script src="../js/head.js"></script>
+
+</head>
+
+<body>
+    <script src="../js/main.js"></script>
+       <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+
+            <a class="navbar-brand" href="../index.html">大二網頁程式設計</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="./aboutme.html">關於我</a>
+                    </li>    
+                    <li class="nav-item">
+                        <a class="nav-link" href="../other.html">其他東西</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="game.html">小遊戲</a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center">
+                    <span class="me-3"> 作者：褚昀澔</span>
+                 
+                </div>
+            </div>
+
+        </div>
+    </nav>
+    <div class="cent my-5">
+        <div class="card col-12 col-md-9 col-lg-6">
+            <div class="card-header">
+                <h3>驗證碼</h3>
+            </div>
+            <div class="card-body ">
+                <h3 class="text-center">請連成一條<span id="target"></span></h3>
+                <div class="cent">
+                    <div class="grid  ">
+
+                        <div class=" block btn btn-outline-secondary" id="7"></div>
+                        <div class=" block btn btn-outline-secondary" id="8"></div>
+                        <div class=" block btn btn-outline-secondary" id="9"></div>
+                        <div class=" block btn btn-outline-secondary" id="4"></div>
+                        <div class=" block btn btn-outline-secondary" id="5"></div>
+                        <div class=" block btn btn-outline-secondary" id="6"></div>
+                        <div class=" block btn btn-outline-secondary" id="1"></div>
+                        <div class=" block btn btn-outline-secondary" id="2"></div>
+                        <div class=" block btn btn-outline-secondary" id="3"></div>
+                    </div>
+                </div>
+                <div class="cent">
+                    <button class="btn btn-primary my-3 col-3 " type="button" onclick="check()">驗證</button>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    <script>
+        function waitForJquery(cb) {
+            if (window.jQuery) cb();
+            else setTimeout(() => waitForJquery(cb), 50);
+        }
+        function check() {
+            arr = []
+            $(".block").each(function () {
+                if ($(this).hasClass('btn-warning')) {
+                    arr.push($(this)[0].id)
+                }
+            });
+            // if(arr)
+            arr.sort()
+            if (num[rd].find(a => a == (arr.join('')))) {
+                alert('你成功了，但還是得說再見')
+                location.replace('../other.html')
+            } else {
+                count--
+                if (count <= 0) {
+                    alert('太糟糕了，掰掰!')
+                    location.replace('../other.html')
+                    
+                } else {
+
+                    alert(`驗證錯誤!剩餘${count}機會`)
+                }
+            }
+        }
+
+        function rand() {
+            rd = Math.floor(Math.random() * 3)
+            $('#target').text(title[rd])
+        }
+        waitForJquery(() => {
+            num = [
+                ['147', '258', '369'],
+                ['123', '456', '789'],
+                ['159', '357']
+            ]
+            title = ["直線", "橫線", "斜直線"]
+            rd = 0        
+            rand()
+            count = 3
+            $('.block').click(function () {
+                $(this).toggleClass('btn-warning')
+                $(this).toggleClass('btn-outline-secondary')
+            })
+        });
+    </script>
+</body>
+
+</html>
