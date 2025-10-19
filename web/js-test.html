@@ -55,6 +55,9 @@
                             <div class="col-auto">
                                 <button class="btn btn-outline-primary btn-sm" id="table1">模板參考1</button>
                             </div>
+                            <div class="col-auto">
+                                <button class="btn btn-outline-secondary btn-sm" id="cleartb" >清空</button>
+                            </div>
                         </div>
 
                     </div>
@@ -95,6 +98,12 @@
                 render();
                 updatePos();          
             })
+            $('#cleartb').click(function () {
+                $ta.val('')
+                render();
+                updatePos();          
+            })
+            
 
             function render() { $iframe[0].srcdoc = $ta.val(); }
 
