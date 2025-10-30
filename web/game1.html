@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大二網頁設計</title>
+    <script src="../js/head.js"></script>
+
+
+</head>
+
+
+<body>
+    <script src="../js/main.js"></script>
+    <script>load_navbar("../web/")</script>
+    <div class="cent">
+
+        <div class="card col-12 col-md-9 col-lg-9 m-5 rounded shadow ">
+            <div class="card-body " style="min-height: 70vh;">
+                <div class="row">
+                    <div class="col">
+                        <label for="">血量</label>
+                        <div class="progress" style="height: 30px;  background-color: beige;">
+                            <div class="progress-bar bg-danger " role="progressbar" style="width: 100%;" id="hp_bar">
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <label for="">魔力</label>
+                        <div class="progress" style="height: 30px;  background-color: beige;">
+                            <div class="progress-bar bg-primary " role="progressbar" style="width: 100%;" id="mage_bar">
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <label for="">經驗</label>
+                        <div class="progress " style="height: 30px; background-color: beige;">
+                            <div class="progress-bar bg-warning " role="progressbar" style="width: 0%;" id="exp_bar">
+                                0%
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-danger" onclick="cleardata()">刪除資料</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-auto">
+                        <p>等級:<span id="lvl">1</span></p>
+                    </div>
+                    <div class="col-auto">
+                        <p>攻擊力:<span id="atk">1</span></p>
+                    </div>
+                    <div class="col-auto">
+                        <p>防禦力:<span id="def">1</span></p>
+                    </div>
+                    <div class="col-auto">
+                        <p>金錢:<span id="coin">0</span></p>
+                    </div>
+                </div>
+                <iframe src="" id="gameFrame" class="flex-fill" style="width:100%; height: 80%;; border:0;"></iframe>
+
+                <!-- Modal Overlay -->
+                <div id="inventoryOverlay" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.5);
+    justify-content:center;
+    align-items:flex-start;
+    padding-top:50px;
+    z-index:1000;
+">
+                    <!-- Modal Content -->
+                    <div style="
+        position:relative; /* 為按鈕定位做準備 */
+        background:#fff;
+        padding:20px;
+        border-radius:10px;
+        display:flex;
+        gap:20px;
+        min-width:400px;
+        max-height:80%;
+        overflow:auto;
+    ">
+                        <!-- 關閉按鈕 -->
+                        <button id="closeInventory" class="btn btn-sm btn-secondary" style="
+            position:absolute;
+            top:10px;
+            right:10px;
+        " onclick="closeInventory()">X</button>
+
+                        <!-- 裝備欄 -->
+                        <div id="equipmentPanel" style="width:150px; flex-shrink:0;">
+                            <div id="weaponSlot"
+                                style="border:1px solid #ccc; padding:8px; margin-bottom:10px; text-align:center; border-radius:5px; background:#f8f9fa;">
+                            </div>
+                            <div id="armorSlot"
+                                style="border:1px solid #ccc; padding:8px; text-align:center; border-radius:5px; background:#f8f9fa;">
+                            </div>
+                        </div>
+
+                        <!-- 物品欄 -->
+                        <table id="inventoryTable" class="table" style="border-collapse:collapse; min-width:200px;">
+                            <tr>
+                                <th style="border-bottom:1px solid #000; text-align:left; padding:4px;">物品</th>
+                                <th style="border-bottom:1px solid #000; text-align:left; padding:4px;">數量</th>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+
+
+
+
+            </div>
+        </div>
+        <div id="tooltip" style="
+    position: absolute;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 5px;
+    pointer-events: none;
+    display: none;
+    font-size: 14px;
+    z-index: 2000;
+"></div>
+    </div>
+
+    <script>
+        const exp_bar = document.getElementById("exp_bar");
+        const hp_bar = document.getElementById("hp_bar");
+        const mage_bar = document.getElementById("mage_bar");
+        class Character {
+            constructor(name, maxHP, maxMP) {
+                this.name = name;
+                this.maxHP = maxHP;
+                this.currentHP = maxHP;
+                this.maxMP = maxMP;
+                this.currentMP = maxMP;
+                this.exp = 0;
+                this.maxExp = 100;
+                this.lvl = 1;
+                this.atk = 1;
+                this.def = 1;
+                this.coin = 0;
+                this.tasks = [];
+                this.inventory = [];
+                this.equipment = {
+                    weapon: null,
+                    armor: null
+                };
+                this.img = "../img/烏一一阿一.png"
+            }
+
+            takeDamage(amount) {
+                this.currentHP -= amount;
+                if (this.currentHP < 0) this.currentHP = 0;
+            }
+
+            heal(amount) {
+                this.currentHP += amount;
+                if (this.currentHP > this.maxHP) this.currentHP = this.maxHP;
+            }
+
+            useMP(amount) {
+                this.currentMP -= amount;
+                if (this.currentMP < 0) this.currentMP = 0;
+            }
+
+
+            gainExp(amount) {
+                this.exp += amount;
+                if (this.exp >= this.maxExp) {
+                    this.exp -= this.maxExp
+                    this.maxExp = Math.round(this.maxExp + this.maxExp * 0.2)
+                    this.lvl += 1
+                    this.maxHP += 10
+                    this.maxMP += 10;
+                    this.currentHP = this.maxHP;
+                    this.currentMP = this.maxMP;
+                    this.atk += 1
+                    this.def += 1
+                    updateBars()
+                }
+            }
+
+            addItem(item) {
+                const base = itemDatabase[item.name];
+                if (!base) return alert(`資料庫裡沒有 ${item.name}`);
+
+                const existing = this.inventory.find(i => i.name === item.name);
+
+                if (existing && base.type === 'consumable') {
+                    existing.quantity += item.quantity || 1;
+                } else if (!existing) {
+                    this.inventory.push({
+                        name: item.name,
+                        quantity: item.quantity || 1,
+                        enhancement: item.enhancement || 0,
+                        type: base.type // ✅ 加上 type
+                    });
+                }
+
+                savePlayer();
+            }
+
+
+            useItem(itemName, quantity = 1) {
+                const item = this.inventory.find(i => i.name === itemName);
+                if (!item) return alert(`${itemName} 不存在`);
+                if (item.quantity < quantity) return alert(`${itemName} 數量不足`);
+
+                const base = itemDatabase[item.name];
+
+                if (base.type === 'consumable' && base.effect) {
+                    if (base.effect.hp) this.heal(base.effect.hp * quantity);
+                    if (base.effect.mp) {
+                        this.currentMP += base.effect.mp * quantity;
+                        if (this.currentMP > this.maxMP) this.currentMP = this.maxMP;
+                    }
+
+                    item.quantity -= quantity;
+                    if (item.quantity <= 0) this.inventory = this.inventory.filter(i => i.name !== itemName);
+                } else if (base.type === 'weapon' || base.type === 'armor') {
+                    this.equip(itemName);
+                }
+
+                savePlayer();
+                updateBars();
+            }
+
+
+
+            removeItem(itemName) {
+                this.inventory = this.inventory.filter(i => i.name !== itemName);
+                savePlayer();
+            }
+
+            listItems() {
+                console.log("=== 物品欄 ===");
+                this.inventory.forEach(i => console.log(`${i.name} x${i.quantity}`));
+            }
+
+            equip(itemName) {
+                const item = this.inventory.find(i => i.name === itemName);
+                if (!item) return alert(`${itemName} 不存在`);
+
+                const base = itemDatabase[item.name]; // 從 database 讀屬性
+                if (!base) return alert(`${itemName} 沒有在資料庫裡`);
+
+                if (base.type === 'weapon') {
+                    this.equipment.weapon = {
+                        name: base.name,
+                        atk: base.atk + (item.enhancement || 0) // 加上強化值
+                    };
+                } else if (base.type === 'armor') {
+                    this.equipment.armor = {
+                        name: base.name,
+                        def: base.def + (item.enhancement || 0)
+                    };
+                }
+
+                savePlayer();
+                updateBars();
+            }
+
+
+            unequip(slot) {
+                if (slot === 'weapon') player.equipment.weapon = null;
+                else if (slot === 'armor') player.equipment.armor = null;
+                loadInventory();
+                updateBars();
+            }
+        }
+
+        const player = new Character("Player", 100, 50);
+        let stats = calculateStats(player);
+
+        const tasks = [
+            { name: "討伐史萊姆", count: 5, rewards: { coin: 100, exp: 100, items: ["藥水"] } },
+            { name: "討伐哥布林", count: 5, rewards: { coin: 100, exp: 200, items: ["鐵劍"] } },
+            { name: "討伐骷髏兵", count: 5, rewards: { coin: 100, exp: 500, items: ["矛"] } }
+        ];
+        function generateEnemy() {
+            const enemies = [
+                { name: "史萊姆", img: '../img/史萊姆.png', hp: 30, atk: 5, def: 0, rewardExp: 20, rewardCoin: [5, 15], drops: ["藥水"], lvl: [1, 10] },
+                { name: "哥布林", img: '../img/哥布林.png', hp: 60, atk: 15, def: 10, rewardExp: 40, rewardCoin: [10, 20], drops: ["藥水", "矛"], lvl: [10, 20] },
+                { name: "骷髏兵", img: '../img/骷髏頭.png', hp: 200, atk: 30, def: 20, rewardExp: 100, rewardCoin: [15, 25], drops: ["寶箱", "盾牌"], lvl: [20, 30] }
+            ];
+            let enemy = {...enemies[Math.floor(Math.random() * enemies.length)] }
+            let minLvl = enemy.lvl[0];
+            let maxLvl = enemy.lvl[1];
+            let lvl = Math.floor(Math.random() * (maxLvl - minLvl + 1)) + minLvl;
+            enemy.hp += (lvl - 1) * 5
+            enemy.atk += (lvl - 1) * 5
+            enemy.def += (lvl - 1) * 5
+            enemy.rewardExp += (lvl - 1) * 5
+            enemy.lvl = lvl
+            return enemy;
+        }
+        const shopItems = [
+            { name: "小型回血藥水", price: 50 },
+            { name: "小型魔力藥水", price: 50 },
+            { name: "中型回血藥水", price: 150 },
+            { name: "中型魔力藥水", price: 150 }
+        ];
+        const itemDatabase = {
+            "藥水": { name: "藥水", type: "consumable", effect: { hp: 40 } },
+            "小型回血藥水": { name: "小型回血藥水", type: "consumable", effect: { hp: 40 }, content: "回復40hp" },
+            "小型魔力藥水": { name: "小型魔力藥水", type: "consumable", effect: { hp: 40 }, content: "回復40mp" },
+            "中型回血藥水": { name: "中型回血藥水", type: "consumable", effect: { hp: 100 }, content: "回復100hp" },
+            "中型魔力藥水": { name: "中型魔力藥水", type: "consumable", effect: { hp: 100 }, content: "回復100mp" },
+            "寶箱": { name: "寶箱", type: "consumable", content: "可能開出任何東西" },
+            "矛": { name: "矛", type: "weapon", atk: 10, content: "+10攻擊力，隔壁老王都說我猛" },
+            "盾牌": { name: "盾牌", type: "armor", def: 5, content: "+5防禦力，有點硬起來了" },
+            "鐵劍": { name: "鐵劍", type: "weapon", atk: 5, quantity: 1, content: "+5攻擊力，有點攻擊但不多" },
+            "神劍": { name: "神劍", type: "weapon", atk: 1000, quantity: 1, content: "+1000攻擊力，天啊外掛武器" },
+            "金鐘罩": { name: "金鐘罩", type: "armor", def: 1000, quantity: 1, content: "+1000防禦力，太硬了吧，沒人打得穿" }
+        };
+
+
+
+        function waitForJquery(cb) {
+            if (window.jQuery) cb();
+            else setTimeout(() => waitForJquery(cb), 50);
+        }
+
+        function calculateStats(player) {
+            return {
+                atk: player.atk + (player.equipment.weapon?.atk || 0),
+                def: player.def + (player.equipment.armor?.def || 0),
+                maxHP: player.maxHP + (player.equipment.armor?.hp || 0),
+                maxMP: player.maxMP + (player.equipment.weapon?.mp || 0)
+            };
+        }
+
+        function updateBars() {
+            stats = calculateStats(player);
+
+            hp_bar.style.width = (player.currentHP / stats.maxHP * 100) + "%";
+            hp_bar.innerText = player.currentHP + "/" + stats.maxHP;
+
+            mage_bar.style.width = (player.currentMP / stats.maxMP * 100) + "%";
+            mage_bar.innerText = player.currentMP + "/" + stats.maxMP;
+
+            exp_bar.style.width = (player.exp / player.maxExp) * 100 + "%";
+            exp_bar.innerText = player.exp + "/" + player.maxExp;
+
+            document.getElementById('lvl').innerText = player.lvl;
+            document.getElementById('atk').innerText = stats.atk;
+            document.getElementById('def').innerText = stats.def;
+            document.getElementById('coin').innerText = player.coin;
+        }
+
+        function expadd() {
+            // setInterval(() => {
+            //     player.gainExp(10)
+            //   
+            //     savePlayer()
+
+            // }, 1000);
+
+
+        }
+
+        function restAtInn() {
+            player.currentHP = player.maxHP;
+            player.currentMP = player.maxMP;
+            updateBars();
+            alert("你在旅館休息了一晚，體力和魔力都恢復了！");
+            loadTown();
+        }
+
+
+
+        function loadInventory() {
+            const overlay = document.getElementById('inventoryOverlay');
+            const tooltip = document.getElementById('tooltip');
+
+            // ---- 裝備欄 ----
+            const weaponSlot = document.getElementById('weaponSlot');
+            weaponSlot.innerHTML = `<strong>武器:</strong> `;
+            if (player.equipment.weapon) {
+                weaponSlot.innerHTML += player.equipment.weapon.name;
+                const btn = document.createElement('button');
+                btn.innerText = '卸下';
+                btn.className = 'btn btn-sm btn-warning';
+                btn.onclick = () => { player.unequip('weapon'); updateBars(); loadInventory(); };
+                weaponSlot.appendChild(btn);
+            } else weaponSlot.innerHTML += '無';
+
+            const armorSlot = document.getElementById('armorSlot');
+            armorSlot.innerHTML = `<strong>防具:</strong> `;
+            if (player.equipment.armor) {
+                armorSlot.innerHTML += player.equipment.armor.name;
+                const btn = document.createElement('button');
+                btn.innerText = '卸下';
+                btn.className = 'btn btn-sm btn-warning';
+                btn.onclick = () => { player.unequip('armor'); updateBars(); loadInventory(); };
+                armorSlot.appendChild(btn);
+            } else armorSlot.innerHTML += '無';
+
+            // ---- 物品欄 ----
+            const table = document.getElementById('inventoryTable');
+            table.innerHTML = `
+        <tr>
+            <th style="border-bottom:1px solid #000; text-align:left; padding:4px;">物品</th>
+            <th style="border-bottom:1px solid #000; text-align:left; padding:4px;">數量</th>
+        </tr>
+    `;
+
+            player.inventory.forEach(item => {
+                const base = itemDatabase[item.name];
+                if (!base) return; // 資料庫沒有就跳過
+
+                const row = table.insertRow();
+                row.insertCell().innerText = base.name;
+                row.insertCell().innerText = item.quantity;
+
+                // Tooltip
+                row.onmouseenter = e => {
+                    tooltip.innerText = `${base.name}\n類型: ${base.type}\n說明: ${base.content || '無'}`;
+                    tooltip.style.left = e.pageX + 15 + 'px';
+                    tooltip.style.top = e.pageY + 15 + 'px';
+                    tooltip.style.display = 'block';
+                };
+                row.onmousemove = e => {
+                    tooltip.style.left = e.pageX + 15 + 'px';
+                    tooltip.style.top = e.pageY + 15 + 'px';
+                };
+                row.onmouseleave = () => { tooltip.style.display = 'none'; };
+
+                // 點擊顯示操作按鈕
+                row.onclick = () => {
+                    const existing = table.querySelector('.action-row');
+                    if (existing) existing.remove();
+
+                    const actionRow = table.insertRow(row.rowIndex + 1);
+                    actionRow.className = 'action-row';
+                    const cell = actionRow.insertCell();
+                    cell.colSpan = 2;
+                    cell.style.textAlign = 'center';
+
+                    if (base.type === 'consumable') {
+                        const useBtn = document.createElement('button');
+                        useBtn.innerText = '使用';
+                        useBtn.className = 'btn btn-sm btn-primary me-2';
+                        useBtn.onclick = () => { player.useItem(base.name); updateBars(); loadInventory(); };
+                        cell.appendChild(useBtn);
+
+                        const removeBtn = document.createElement('button');
+                        removeBtn.innerText = '丟棄';
+                        removeBtn.className = 'btn btn-sm btn-danger';
+                        removeBtn.onclick = () => { if (confirm(`丟棄 ${base.name}?`)) { player.removeItem(base.name); loadInventory(); } };
+                        cell.appendChild(removeBtn);
+                    }
+
+                    if (base.type === 'weapon' || base.type === 'armor') {
+                        const isEquipped = (base.type === 'weapon' && player.equipment.weapon?.name === base.name)
+                            || (base.type === 'armor' && player.equipment.armor?.name === base.name);
+                        const equipBtn = document.createElement('button');
+                        equipBtn.innerText = isEquipped ? '卸下' : '裝備';
+                        equipBtn.className = `btn btn-sm ${isEquipped ? 'btn-warning' : 'btn-success'} me-2`;
+                        equipBtn.onclick = () => { if (isEquipped) player.unequip(base.type); else player.equip(base.name); updateBars(); loadInventory(); };
+                        cell.appendChild(equipBtn);
+
+                        if (!isEquipped) {
+                            const removeBtn = document.createElement('button');
+                            removeBtn.innerText = '丟棄';
+                            removeBtn.className = 'btn btn-sm btn-danger';
+                            removeBtn.onclick = () => { if (confirm(`丟棄 ${base.name}?`)) { player.removeItem(base.name); loadInventory(); } };
+                            cell.appendChild(removeBtn);
+                        }
+                    }
+                };
+            });
+
+            overlay.style.display = 'flex';
+        }
+
+
+
+
+
+
+        function closeInventory() {
+            document.getElementById('inventoryOverlay').style.display = 'none';
+        }
+
+
+        function updateInventoryTable() {
+            const iframe = document.getElementById('gameFrame');
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            const table = doc.getElementById('inventory');
+
+            table.innerHTML = '<tr><th>物品</th><th>數量</th><th>操作</th></tr>';
+
+            player.inventory.forEach((item, i) => {
+                const row = table.insertRow();
+                row.insertCell().innerText = item.name;
+                row.insertCell().innerText = item.quantity;
+
+                const actionCell = row.insertCell();
+                const useBtn = doc.createElement('button');
+                useBtn.classList.add('btn', 'btn-sm', 'btn-success', 'me-2');
+                useBtn.innerText = '使用';
+                useBtn.onclick = () => {
+                    player.useItem(item.name);
+                    updateInventoryTable();
+                };
+
+                const removeBtn = doc.createElement('button');
+                removeBtn.classList.add('btn', 'btn-sm', 'btn-danger');
+                removeBtn.innerText = '丟棄';
+                removeBtn.onclick = () => {
+                    player.removeItem(item.name);
+                    updateInventoryTable();
+                };
+
+                actionCell.appendChild(useBtn);
+                actionCell.appendChild(removeBtn);
+            });
+        }
+
+
+
+        function updateTaskTable(doc) {
+            const table = doc.getElementById('task');
+            if (!table) return console.error("找不到 task table");
+
+            // 建立 tbody，如果沒有的話
+            let tbody = table.querySelector('tbody');
+            if (!tbody) {
+                tbody = doc.createElement('tbody');
+                table.appendChild(tbody);
+            }
+
+            tbody.innerHTML = ''; // 清空原有任務列
+
+            tasks.forEach((task) => {
+                const row = tbody.insertRow();
+
+                // 找玩家任務
+                const playerTask = player.tasks.find(t => t.name === task.name);
+
+                // 任務名稱 + 進度
+                let taskText = task.name + ` *${task.count}`;
+                if (playerTask) {
+                    taskText += ` (${playerTask.progress}/${task.count})`;
+                }
+
+                const nameCell = row.insertCell();
+                nameCell.innerText = taskText;
+                nameCell.style.wordBreak = 'break-word'; // 自動換行
+                nameCell.style.maxWidth = '200px'; // 限制寬度，避免擠到右邊
+                nameCell.style.verticalAlign = 'middle';
+
+                // 獎勵欄
+                const rewardText = `錢:${task.rewards.coin || 0} | 經驗:${task.rewards.exp || 0} | 物品:${task.rewards.items?.join(', ') || '無'}`;
+                const rewardCell = row.insertCell();
+                rewardCell.innerText = rewardText;
+                rewardCell.style.wordBreak = 'break-word';
+                rewardCell.style.verticalAlign = 'middle';
+
+                // 按鈕欄
+                const actionCell = row.insertCell();
+                actionCell.style.verticalAlign = 'middle';
+
+                const btn = doc.createElement('button');
+                btn.classList.add('btn', 'btn-sm', 'w-100'); // 寬度 100%
+                btn.style.margin = '2px 0';
+                btn.style.whiteSpace = 'nowrap'; // 不換行
+
+                if (!playerTask) {
+                    // 未接任務
+                    btn.innerText = '接取任務';
+                    btn.classList.add('btn-success');
+                    btn.onclick = () => {
+                        player.tasks.push({
+                            name: task.name,
+                            rewards: task.rewards,
+                            status: '進行中',
+                            progress: 0
+                        });
+                        updateTaskTable(doc);
+                    };
+                } else if (playerTask.progress < task.count) {
+                    // 進行中
+                    btn.innerText = '已接取';
+                    btn.classList.add('btn-secondary', 'disabled');
+                } else {
+                    // 已完成
+                    btn.innerText = '完成';
+                    btn.classList.add('btn-primary');
+                    // 可在這裡加領獎邏輯
+                    btn.onclick = () => {
+                        alert(`領取獎勵: 錢 ${task.rewards.coin}, 經驗 ${task.rewards.exp}, 物品 ${task.rewards.items.join(', ')}`);
+                        // 清除任務或重置進度
+                        player.tasks = player.tasks.filter(t => t.name !== task.name);
+                        updateTaskTable(doc);
+                    };
+                }
+
+                actionCell.appendChild(btn);
+            });
+        }
+
+
+
+
+
+
+        function acceptTask(index, doc) {
+            const task = tasks[index];
+            if (!player.tasks.some(t => t.name === task.name)) {
+                player.tasks.push({ name: task.name, reward: task.reward, status: '進行中' });
+                updateTaskTable(doc); // ✅ 傳入 doc
+            }
+        }
+
+        function completeTask(index, doc) {
+            const task = player.tasks[index];
+            if (!task) return;
+
+            task.status = '完成';
+            player.gainExp(Math.floor(task.reward / 10))
+            player.coin += task.reward;
+
+            updateBars();
+            updateTaskTable(doc); // ✅ 傳入 doc
+        }
+        // function goToScene(scene) {
+        //     const iframe = document.getElementById('gameFrame');
+        //     iframe.src = scene + ".html";  // scene 可以是 "town", "battle", "shop"
+        // }
+        function loadShop() {
+            const iframe = document.getElementById('gameFrame');
+            let shopHTML = shopItems.map((item, i) =>
+                `<tr>
+            <td>${item.name}</td>
+            <td>💰${item.price}</td>
+            <td><button class="btn btn-sm btn-success" onclick="parent.buyItem(${i})">購買</button></td>
+        </tr>`
+            ).join('');
+
+            iframe.srcdoc = `
+    <html>
+    <head>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body style="font-family: sans-serif; text-align:center; background:#fff0f5; min-height:100vh;">
+        <div class="container ">
+            <h1 class="mb-4">🛒 商店</h1>
+            <p>金錢：<span id="shopCoin">${player.coin}</span> 💰</p>
+            <table class="table table-bordered table-hover">
+                <tr><th>物品</th><th>價格</th><th>操作</th></tr>
+                <tbody>${shopHTML}</tbody>
+            </table>
+            
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-outline-secondary w-100" onclick="parent.loadInventory()">物品欄</button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-outline-secondary w-100 mb-3" onclick="parent.loadTown()">返回城鎮</button>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+        }
+
+
+        function buyItem(index) {
+            const item = shopItems[index];
+            if (player.coin >= item.price) {
+                player.coin -= item.price;
+
+                // 傳入完整物件，符合 addItem() 的需求
+                player.addItem({
+                    name: item.name,
+                    type: item.type || 'consumable',
+                    atk: item.atk || 0,
+                    def: item.def || 0,
+                    quantity: 1
+                });
+
+                const iframe = document.getElementById('gameFrame');
+                const shopCoin = iframe.contentDocument.getElementById('shopCoin');
+                if (shopCoin) shopCoin.innerText = player.coin;
+
+                // alert(`你購買了 ${item.name}`);
+            } else {
+                alert("金錢不足！");
+            }
+            savePlayer();
+        }
+    </script>
+
+    <!-- <h1>城鎮</h1>
+        <div class="row">
+            <div class="col">
+                <table id="task"></table>
+            </div>
+            <div class="col">
+                <button class="btn btn-outline-info" onclick="parent.loadScene('shop')">進入商店</button>
+                <button class="btn btn-outline-info" onclick="parent.loadScene('回狀態')">進入旅館休息(回狀態)</button>
+            </div>
+        </div> -->
+    <script>
+
+        function loadTown() {
+            const iframe = document.getElementById('gameFrame');
+            iframe.srcdoc = `
+        <html>
+            <head>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+            </head>
+            <body style="font-family:sans-serif; text-align:center; background:#f5f5dc; min-height:100vh;">
+                <div class="container">
+                    <h1 class="mb-4">🏙️ 城鎮</h1>
+                    <div class="row justify-content-center">
+                        <div class=" col">
+                            <table id="task" class="table table-bordered table-hover">
+                                <tr><th>任務列表</th><th>獎勵</th><th>操作</th></tr>
+                            </table>
+                        </div>
+                        <div class=" col-4">
+                            <button class="btn btn-outline-warning w-100 mb-3" onclick="parent.loadBattle()">探索</button>
+                            <button class="btn btn-outline-primary w-100 mb-3" onclick="parent.loadShop()">進入商店</button>
+                            <button class="btn btn-outline-success w-100 mb-3" onclick="parent.restAtInn()">旅館休息</button>
+                            <button class="btn btn-outline-secondary w-100 mb-3" onclick="parent.loadInventory()">物品欄</button>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </html>
+    `;
+
+            // 這裡是唯一觸發更新 table 的地方
+            iframe.onload = () => {
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                if (!doc) return console.error("iframe content 不存在");
+
+                updateTaskTable(doc); // 將任務渲染到 table
+            };
+        }
+
+        function animateAttack(attacker, callback) {
+            const iframe = document.getElementById('gameFrame');
+            if (!iframe) {
+                if (typeof callback === 'function') callback();
+                return;
+            }
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            if (!doc) {
+                if (typeof callback === 'function') callback();
+                return;
+            }
+
+            const actorImg = doc.querySelector(attacker === 'player' ? '.actor.player img' : '.actor.enemy img');
+            const targetImg = doc.querySelector(attacker === 'player' ? '.actor.enemy img' : '.actor.player img');
+
+            if (!actorImg || !targetImg) {
+                if (typeof callback === 'function') callback();
+                return;
+            }
+
+            const actorRect = actorImg.getBoundingClientRect();
+            const targetRect = targetImg.getBoundingClientRect();
+            const distance = attacker === 'player'
+                ? targetRect.left - actorRect.right - 10
+                : targetRect.right - actorRect.left + 10;
+
+            // 重置 transform
+            actorImg.style.transition = 'none';
+            targetImg.style.transition = 'none';
+            actorImg.style.transform = 'translateX(0) rotate(0deg)';
+            targetImg.style.transform = 'translateX(0) rotate(0deg)';
+            void actorImg.offsetWidth;
+
+            // 攻擊者前衝
+            actorImg.style.transition = 'transform 0.18s ease';
+            actorImg.style.transform = `translateX(${distance}px)`;
+
+            setTimeout(() => {
+                // 攻擊者撞擊震動 + 旋轉
+                actorImg.animate(
+                    [
+                        { transform: `translateX(${distance}px) rotate(0deg)` },
+                        { transform: `translateX(${distance - 8}px) rotate(90deg)` },
+                        { transform: `translateX(${distance + 8}px) rotate(180deg)` },
+                        { transform: `translateX(${distance - 8}px) rotate(270deg)` },
+                        { transform: `translateX(${distance + 8}px) rotate(360deg)` },
+                        { transform: `translateX(${distance}px) rotate(720deg)` }
+                    ],
+                    { duration: 600, iterations: 1, easing: 'ease-in-out' }
+                );
+
+                // 受擊者被撞擊震動 + 往後退
+                targetImg.animate(
+                    [
+                        { transform: 'translateX(0)' },
+                        { transform: attacker === 'player' ? 'translateX(20px)' : 'translateX(-20px)' },
+                        { transform: 'translateX(0)' },
+                        { transform: attacker === 'player' ? 'translateX(10px)' : 'translateX(-10px)' },
+                        { transform: 'translateX(0)' }
+                    ],
+                    { duration: 600, iterations: 1, easing: 'ease-in-out' }
+                );
+
+                // 前衝結束後退回原位
+                setTimeout(() => {
+                    actorImg.style.transition = 'transform 0.12s ease';
+                    actorImg.style.transform = 'translateX(0) rotate(0deg)';
+
+                    targetImg.style.transition = 'transform 0.12s ease';
+                    targetImg.style.transform = 'translateX(0) rotate(0deg)';
+
+                    setTimeout(() => {
+                        if (typeof callback === 'function') callback();
+                    }, 120);
+                }, 600); // 等動畫結束再退回
+            }, 180);
+        }
+
+
+
+        function attackEnemy() {
+            if (player.currentHP <= 0) {
+                alert('挖靠，沒血還來打怪喔，滾回城鎮去');
+                setBattleButtonsDisabled(false);
+                loadTown()
+                return;
+            }
+            const enemy = window.currentEnemy;
+            if (!enemy) return;
+
+            const stats = calculateStats(player);
+            setBattleButtonsDisabled(true);
+            // 攻擊動畫
+            parent.animateAttack('player', () => {
+                // 撞擊瞬間扣血
+                const damage = Math.max(stats.atk - enemy.def, 1);
+                enemy.hp -= damage;
+
+                // 顯示浮動傷害文字
+                showDamageNumber('enemy', damage);
+
+                if (enemy.hp <= 0) {
+                    checkTasks(enemy);
+                    showBattleResult(enemy);
+                    setBattleButtonsDisabled(false);
+                    return;
+                }
+
+                // 敵人反擊動畫
+                parent.animateAttack('enemy', () => {
+                    const enemyDamage = Math.max(enemy.atk - stats.def, 1);
+                    player.currentHP -= enemyDamage;
+
+                    showDamageNumber('player', enemyDamage);
+                    if (player.currentHP <= 0) {
+                        showPlayerDeath(enemy)
+
+                        setBattleButtonsDisabled(false);
+                        return;
+                    }
+                    savePlayer();
+                    setTimeout(() => {
+                        loadBattle(false);
+                        setBattleButtonsDisabled(false);
+                    }, 300);
+                });
+            });
+        }
+        function setBattleButtonsDisabled(disabled) {
+            const iframe = document.getElementById('gameFrame');
+            if (!iframe) return;
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            if (!doc) return;
+
+            const attackBtn = doc.getElementById('btnAttack');
+            const runBtn = doc.getElementById('btnRun');
+
+            if (attackBtn) attackBtn.disabled = disabled;
+            if (runBtn) runBtn.disabled = disabled;
+        }
+
+        function showDamageNumber(target, damage) {
+            const iframe = document.getElementById('gameFrame');
+            if (!iframe) return;
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            const targetDiv = doc.querySelector(target === 'player' ? '.actor.player' : '.actor.enemy');
+            if (!targetDiv) return;
+
+            const dmgEl = doc.createElement('div');
+            dmgEl.textContent = `-${damage}`;
+            dmgEl.style.position = 'absolute';
+            dmgEl.style.color = 'red';
+            dmgEl.style.fontWeight = 'bold';
+            dmgEl.style.fontSize = '24px';
+            dmgEl.style.top = '-30px';
+            dmgEl.style.left = '50%';
+            dmgEl.style.transform = 'translateX(-50%)';
+            dmgEl.style.opacity = 1;
+            dmgEl.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+
+            targetDiv.appendChild(dmgEl);
+
+            // 浮動消失動畫
+            setTimeout(() => {
+                dmgEl.style.transform = 'translateX(-50%) translateY(-50px)';
+                dmgEl.style.opacity = 0;
+            }, 50);
+
+            // 動畫結束後移除
+            setTimeout(() => {
+                dmgEl.remove();
+            }, 650);
+        }
+
+        function checkTasks(enemy) {
+            player.tasks.forEach(task => {
+                if (task.status === '進行中' && task.name.includes(enemy.name)) {
+                    task.progress += 1;
+                    if (task.progress >= tasks.find(t => t.name === task.name).count) {
+                        task.status = '完成';
+                        player.coin += task.rewards.coin;
+                        player.gainExp(task.rewards.exp)
+
+                        task.rewards.items?.forEach(item => player.addItem({ name: item }));
+                        // alert(`任務完成: ${task.name}`);
+                    } else {
+                        // alert(`任務進度: ${task.name} (${task.progress}/${tasks.find(t => t.name === task.name).count})`);
+                    }
+                    savePlayer();
+                }
+            });
+        }
+
+
+
+        function getRandomDrop(enemy) {
+            if (!enemy.drops || enemy.drops.length === 0) return null;
+            if (Math.random() < 0.5) { // 50% 掉落率
+                const itemName = enemy.drops[Math.floor(Math.random() * enemy.drops.length)];
+                const item = { ...itemDatabase[itemName] }; // 複製物件，避免引用同一個
+                player.addItem(item); // 用 Character 的 addItem 正確加入
+                return item;
+            }
+            return null;
+        }
+
+
+        function showPlayerDeath(enemy) {
+            const iframe = document.getElementById('gameFrame');
+
+            window.currentEnemy = null;
+
+            iframe.srcdoc = `
+    <html>
+        <head>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        </head>
+        <body style="font-family:sans-serif; text-align:center; background:#ffd1d1; min-height:100vh;">
+            <div class="container">
+                <h1>你被 ${enemy.name} 擊敗了！ </h1>
+                <p>真菜 回程城鎮在練個十年吧</p>
+                <button class="btn btn-primary" onclick="parent.loadTown()">返回城鎮</button>
+            </div>
+        </body>
+    </html>`;
+
+            updateBars();
+        }
+
+        function showBattleResult(enemy) {
+            const iframe = document.getElementById('gameFrame');
+
+            // 計算金幣與經驗
+            const gold = Math.floor(Math.random() * (enemy.rewardCoin[1] - enemy.rewardCoin[0] + 1)) + enemy.rewardCoin[0];
+            const exp = enemy.rewardExp;
+
+            player.coin += gold;
+            player.gainExp(exp);
+
+            // 計算掉落物品
+            const drop = getRandomDrop(enemy);
+            const dropItem = drop ? drop.name : null
+
+            savePlayer();
+            window.currentEnemy = null;
+
+            iframe.srcdoc = `
+    <html>
+        <head>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        </head>
+        <body style="font-family:sans-serif; text-align:center; background:#d1ffd1; min-height:100vh;">
+            <div class="container">
+                <h1>🏆 戰鬥勝利！</h1>
+                <p>你擊敗了 <strong>${enemy.name}</strong></p>
+                <p>獲得經驗值：<strong>${exp}</strong></p>
+                <p>獲得金幣：<strong>${gold}</strong></p>
+                ${dropItem ? `<p>掉落物品：<strong>${dropItem}</strong></p>` : `<p>沒有掉落物品</p>`}
+                  <div class="fixed-bottom  p-3 d-flex justify-content-center border-top" style="background:#d1ffd1">
+                    <button class="btn btn-outline-primary me-3" onclick="parent.loadBattle(true)">繼續探索</button>
+                    <button class="btn btn-outline-success me-3" onclick="parent.loadInventory()">物品欄</button>
+                    <button class="btn btn-primary" onclick="parent.loadTown()">返回城鎮</button>
+                </div>
+            </div>
+        </body>
+    </html>`;
+
+            updateBars();
+        }
+
+
+        function runFromBattle() {
+
+            window.currentEnemy = null;
+            loadTown();
+        }
+
+        function loadBattle(newEncounter = false) {
+            const iframe = document.getElementById('gameFrame');
+            let enemy = window.currentEnemy;
+
+            // 只有新事件或沒有敵人時才生成敵人
+            if (newEncounter || !enemy) {
+                const rand = Math.random();
+                if (rand < 0.7) {
+                    // 戰鬥事件
+                    // atk: 5, def: 0, rewardExp: 20,
+                    enemy = generateEnemy();
+
+
+                    window.currentEnemy = enemy;
+                } else if (rand < 0.9) {
+                    // 寶箱事件
+                    const gold = Math.floor(Math.random() * 50) + 10;
+                    player.coin += gold;
+                    savePlayer();
+                    iframe.srcdoc = `
+            <html>
+                <head>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                </head>
+                <body style="font-family:sans-serif; text-align:center; background:#fff0f5; min-height:100vh;">
+                    <div class="container">
+                        <h1>🎁 你找到一個寶箱！</h1>
+                        <p>獲得 ${gold} 金幣！</p>
+                          <div class="fixed-bottom  p-3 d-flex justify-content-center border-top"style="background:#fff0f5">
+                            <button class="btn btn-outline-primary me-3" onclick="parent.loadBattle(true)">繼續探索</button>
+                            <button class="btn btn-outline-success me-3" onclick="parent.loadInventory()">物品欄</button>
+                            <button class="btn btn-primary" onclick="parent.loadTown()">返回城鎮</button>
+                        </div>
+                    </div>
+                </body>
+            </html>`;
+                    updateBars();
+                    return;
+                } else {
+                    // 陷阱事件
+                    const damage = Math.floor(Math.random() * 10) + 5;
+                    player.currentHP = Math.max(0, player.currentHP - damage);
+                    savePlayer();
+                    iframe.srcdoc = `
+            <html>
+                <head>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                </head>
+                <body style="font-family:sans-serif; text-align:center; background:#f0e68c; min-height:100vh;">
+                    <div class="container">
+                        <h1>💀 你踩到陷阱！</h1>
+                        <p>受到 ${damage} 點傷害。</p>
+                          <div class="fixed-bottom  p-3 d-flex justify-content-center border-top"style="background:#f0e68c;">
+                            <button class="btn btn-outline-primary me-3" onclick="parent.loadBattle(true)">繼續探索</button>
+                            <button class="btn btn-outline-success me-3" onclick="parent.loadInventory()">物品欄</button>
+                            <button class="btn btn-primary" onclick="parent.loadTown()">返回城鎮</button>
+
+                        </div>
+                    </div>
+                </body>
+            </html>`;
+                    updateBars();
+                    return;
+                }
+            }
+
+            // 戰鬥中顯示敵人狀態
+            const content = `
+<h1>⚔️ 遭遇敵人：${enemy.name}</h1>
+<p>敵人 等級:${enemy.lvl}</p>
+<p>敵人 HP：${enemy.hp}</p>
+<p>敵人 攻擊力：${enemy.atk}</p>
+<p>敵人 防禦力：${enemy.def}</p>
+
+<!-- 攻擊圖片層浮在上面 -->
+<div id="img_atk" style="
+  position:absolute;
+  top:50%;
+  left:0;
+  right:0;
+  transform:translateY(-50%);
+  height:200px;
+  z-index:9999;
+  overflow:visible;
+  pointer-events:none;
+">
+
+  <!-- 玩家 -->
+  <div class="actor player" style="
+    position:absolute;
+    left:0;
+    top:50%;
+    transform:translateY(-50%);
+  ">
+    <img id="playerImg" src="${player.img}" style="
+      display:block;
+      width:150px;
+      transition: transform 0.28s ease;
+      transform: translateX(0);
+      ">
+      </div>
+      
+      <!-- 敵人 -->
+      <div class="actor enemy" style="
+      position:absolute;
+      right:0;
+      top:50%;
+      transform:translateY(-50%);
+      ">
+      <img id="enemyImg" src="${enemy.img}" style="
+      display:block;
+      height:150px;
+      width:150px;
+      transition: transform 0.28s ease;
+      transform: translateX(0);
+    ">
+  </div>
+</div>
+
+<!-- 底部操作列 -->
+<div class="fixed-bottom p-3 d-flex justify-content-center border-top" 
+  style="background:#f0e68c; z-index:2000;">
+  <button class="btn btn-danger me-3" id="btnAttack" onclick="parent.attackEnemy()">攻擊</button>
+  <button class="btn btn-outline-success me-3" onclick="parent.loadInventory()">物品欄</button>
+  <button class="btn btn-secondary me-3" id="btnRun" onclick="parent.runFromBattle()">逃跑</button>
+</div>
+`;
+
+            iframe.srcdoc = `
+        <html>
+            <head>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+            </head>
+            <body style="font-family:sans-serif; text-align:center; background:#f0e68c; min-height:100vh;">
+                <div class="container">${content}</div>
+            </body>
+        </html>`;
+
+            updateBars();
+        }
+
+
+
+        function cleardata() {
+            localStorage.removeItem('playerData');
+            location = ''
+        }
+
+        function savePlayer() {
+            const data = {
+                currentHP: player.currentHP,
+                maxHP: player.maxHP,
+                currentMP: player.currentMP,
+                maxMP: player.maxMP,
+                exp: player.exp,
+                maxExp: player.maxExp,
+                lvl: player.lvl,
+                atk: player.atk,
+                def: player.def,
+                coin: player.coin,
+                tasks: player.tasks,
+                inventory: player.inventory,
+                equipment: {
+                    weapon: player.equipment.weapon,
+                    armor: player.equipment.armor
+                }
+            };
+            localStorage.setItem('playerData', JSON.stringify(data));
+        }
+
+        function loadPlayer() {
+            const data = JSON.parse(localStorage.getItem('playerData'));
+            if (data) {
+                player.currentHP = data.currentHP ?? player.currentHP;
+                player.maxHP = data.maxHP ?? player.maxHP;
+                player.currentMP = data.currentMP ?? player.currentMP;
+                player.maxMP = data.maxMP ?? player.maxMP;
+                player.exp = data.exp ?? player.exp;
+                player.maxExp = data.maxExp ?? player.maxExp;
+                player.lvl = data.lvl ?? player.lvl;
+                player.atk = data.atk ?? player.atk;
+                player.def = data.def ?? player.def;
+                player.tasks = data.tasks || [];
+                // ---- 新增：恢復金錢與物品欄 ----
+                player.coin = data.coin ?? player.coin;
+                player.inventory = data.inventory || player.inventory || [];
+                // 若有之前裝備，也可恢復（若你想儲存裝備，需在 savePlayer 中一併儲存 equipment）
+                if (data.equipment) {
+                    player.equipment = data.equipment;
+                }
+            }
+            updateBars();
+        }
+
+
+
+        waitForJquery(() => {
+            console.log(player);
+
+            loadPlayer()
+            // expadd()
+            loadTown()
+            player.addItem({
+                name: "鐵劍",
+
+            });
+            player.addItem({
+                name: "神劍",
+
+            });
+            player.addItem({
+                name: "金鐘罩",
+
+            });
+
+
+
+
+
+        });
+
+
+
+
+    </script>
+
+</body>
+
+</html>
