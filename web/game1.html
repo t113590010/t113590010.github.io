@@ -160,7 +160,7 @@
                 this.img = "../img/烏一一阿一.png"
                 this.train = 10
 
-                this.talentSlots = []; // 用來裝玩家啟用中的天賦
+                this.talentSlots = [];
                 this.talentEffect = {
                     expRate: 0,
                     coinBonus: 0,
@@ -169,6 +169,8 @@
                     defPercent: 0,
                     maxHP: 0
                 }
+                this.statPoints = 0;
+                this.totalStatPoints = 0;
             }
             takeDamage(amount) {
                 this.currentHP -= amount;
@@ -198,9 +200,16 @@
                     this.currentMP = this.maxMP;
                     this.atk += 1;
                     this.def += 1;
+
+
+                    this.statPoints += 5;
+                    this.totalStatPoints += 5;
+
+                    notify(`🎉 升級啦！獲得 5 屬性點可分配！`, "#d1ffd1");
                 }
                 updateBars();
             }
+
             addItem(item) {
                 const base = itemDatabase[item.name];
                 if (!base) return notify(`❌ 資料庫裡沒有 ${item.name}`, "#ffd1d1");
@@ -526,16 +535,92 @@
         }
         stats = calculateStats(player);
 
-        function expadd() {
-            // setInterval(() => {
-            //     player.gainExp(10)
-            //   
-            //     savePlayer()
+        function openStatPanel() {
+            const iframe = document.getElementById('gameFrame');
+            const stats = calculateStats(player);
 
-            // }, 1000);
+            iframe.srcdoc = `
+    <html>
+      <head>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+      </head>
+      <body style="font-family:sans-serif; text-align:center; background:#f5f5dc; min-height:100vh;">
+        <div class="container py-4">
+          <h1 class="mb-4">⚙️ 人物加點</h1>
+          <p>等級：${player.lvl}</p>
+          <p>可用屬性點：<strong id="points">${player.statPoints}</strong></p>
 
+          <table class="table table-bordered w-50 mx-auto">
+            <tr><th>屬性</th><th>當前值</th><th>操作</th></tr>
+            <tr>
+              <td>攻擊力</td>
+              <td id="atkVal">${player.atk}</td>
+              <td><button class="btn btn-sm btn-success" onclick="parent.addStat('atk')">+1</button></td>
+            </tr>
+            <tr>
+              <td>防禦力</td>
+              <td id="defVal">${player.def}</td>
+              <td><button class="btn btn-sm btn-success" onclick="parent.addStat('def')">+1</button></td>
+            </tr>
+            <tr>
+              <td>最大生命</td>
+              <td id="hpVal">${player.maxHP}</td>
+              <td><button class="btn btn-sm btn-success" onclick="parent.addStat('hp')">+10</button></td>
+            </tr>
+            <tr>
+              <td>最大魔力</td>
+              <td id="mpVal">${player.maxMP}</td>
+              <td><button class="btn btn-sm btn-success" onclick="parent.addStat('mp')">+10</button></td>
+            </tr>
+          </table>
 
+          <button class="btn btn-primary mt-4" onclick="parent.loadTown()">返回城鎮</button>
+        </div>
+      </body>
+    </html>`;
         }
+
+        function addStat(type) {
+            if (player.statPoints <= 0) {
+                notify("❌ 沒有剩餘屬性點！", "#ffd1d1");
+                return;
+            }
+
+            switch (type) {
+                case 'atk':
+                    player.atk += 1;
+                    break;
+                case 'def':
+                    player.def += 1;
+                    break;
+                case 'hp':
+                    player.maxHP += 10;
+                    player.currentHP = player.maxHP;
+                    break;
+                case 'mp':
+                    player.maxMP += 10;
+                    player.currentMP = player.maxMP;
+                    break;
+            }
+
+            player.statPoints -= 1;
+            savePlayer();
+            updateBars();
+
+            // 即時更新畫面
+            const iframe = document.getElementById('gameFrame');
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            if (doc) {
+                if (doc.getElementById('points')) doc.getElementById('points').textContent = player.statPoints;
+                if (doc.getElementById('atkVal')) doc.getElementById('atkVal').textContent = player.atk;
+                if (doc.getElementById('defVal')) doc.getElementById('defVal').textContent = player.def;
+                if (doc.getElementById('hpVal')) doc.getElementById('hpVal').textContent = player.maxHP;
+                if (doc.getElementById('mpVal')) doc.getElementById('mpVal').textContent = player.maxMP;
+            }
+
+            notify("✨ 屬性點分配成功！", "#d1ffd1");
+        }
+
 
         function restAtInn() {
             player.currentHP = player.maxHP;
@@ -977,6 +1062,7 @@
                             <button class="btn btn-outline-secondary w-100 mb-3" onclick="parent.loadInventory()">物品欄</button>
                             <button class="btn btn-outline-secondary w-100 mb-3" onclick="parent.train()">訓練</button>
                             <button class="btn btn-outline-secondary w-100 mb-3" onclick="parent.talent()">天賦</button>
+                            <button class="btn btn-outline-info w-100 mb-3" onclick="parent.openStatPanel()">人物加點</button>
                         </div>
                     </div>
                 </div>
@@ -1465,7 +1551,7 @@
 
             return null; // 沒中獎
         }
- 
+
 
 
         function showPlayerDeath(enemy) {
@@ -1713,8 +1799,9 @@
                     weapon: player.equipment.weapon,
                     armor: player.equipment.armor
                 },
-                talentSlots: player.talentSlots || []
-
+                talentSlots: player.talentSlots || [],
+                statPoints: player.statPoints,
+                totalStatPoints: player.totalStatPoints
             };
             localStorage.setItem('playerData', JSON.stringify(data));
         }
@@ -1740,7 +1827,8 @@
                     player.equipment = data.equipment;
                 }
                 player.talentSlots = data.talentSlots || []
-
+                player.statPoints = data.statPoints ?? player.statPoints;
+                player.totalStatPoints = data.totalStatPoints ?? player.totalStatPoints;
             }
             updateBars();
         }
@@ -1753,7 +1841,7 @@
             loadPlayer()
             // expadd()
             loadTown()
-          
+
 
         });
 
