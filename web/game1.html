@@ -171,6 +171,7 @@
                 }
                 this.statPoints = 0;
                 this.totalStatPoints = 0;
+                this.statBonus = { atk: 0, def: 0, hp: 0, mp: 0 }; // 額外加點加成
             }
             takeDamage(amount) {
                 this.currentHP -= amount;
@@ -189,26 +190,46 @@
 
 
             gainExp(amount) {
-                this.exp += amount;
+                let leveledUp = false;
+                const stats = calculateStats(this);
+                const realAmount = Math.round(amount * stats.expRate);
+                this.exp += realAmount;
+
+                // notify(`獲得經驗 ${realAmount}！`, "#fff8d6");
+
                 while (this.exp >= this.maxExp) {
                     this.exp -= this.maxExp;
                     this.maxExp = Math.round(this.maxExp + this.maxExp * 0.2);
                     this.lvl += 1;
-                    this.maxHP += 10;
-                    this.maxMP += 10;
+
                     this.currentHP = this.maxHP;
                     this.currentMP = this.maxMP;
-                    this.atk += 1;
-                    this.def += 1;
-
-
-                    this.statPoints += 5;
-                    this.totalStatPoints += 5;
-
-                    notify(`🎉 升級啦！獲得 5 屬性點可分配！`, "#d1ffd1");
+                    this.maxHP+=10;
+                    this.maxMP+=10;
+                    this.atk+=1;
+                    this.def+=1;
+                    this.statPoints = (this.statPoints || 0) + 5;
+                    leveledUp = true;
                 }
+
+                if (leveledUp) {
+                    notify(`🎉 等級提升至 ${this.lvl}！獲得 5 屬性點可分配！`, "#d1ffd1");
+                    savePlayer();
+
+                    // ✅ 若目前在「人物加點」畫面，重新載入整個畫面
+                    const iframe = document.getElementById('gameFrame');
+                    const doc = iframe?.contentDocument || iframe?.contentWindow?.document;
+                    if (doc && doc.querySelector("h1")?.innerText.includes("人物加點")) {
+                        parent.openStatPanel(); // 🔁 重新載入整個頁面
+                    }
+
+                    refreshStatPanel(); // 保險補更新一次
+                }
+
                 updateBars();
             }
+
+
 
             addItem(item) {
                 const base = itemDatabase[item.name];
@@ -339,24 +360,24 @@
         const player = new Character("Player", 100, 50);
 
         const tasks = [
-            { name: "討伐史萊姆", count: 5, rewards: { coin: 100, exp: 100, items: ["藥水"] } },
-            { name: "討伐哥布林", count: 5, rewards: { coin: 100, exp: 200, items: ["中型回血藥水", "中型魔力藥水"] } },
-            { name: "討伐骷髏兵", count: 5, rewards: { coin: 100, exp: 500, items: ["寶箱", "盾牌"] } }
+            { name: "討伐史萊姆", count: 5, rewards: { coin: 100, exp: 200, items: ["藥水"] } },
+            { name: "討伐哥布林", count: 5, rewards: { coin: 100, exp: 400, items: ["中型回血藥水", "中型魔力藥水"] } },
+            { name: "討伐骷髏兵", count: 5, rewards: { coin: 100, exp: 1000, items: ["寶箱", "盾牌"] } }
         ];
         function generateEnemy() {
             const enemies = [
-                { name: "史萊姆", img: '../img/史萊姆.png', hp: 30, atk: 5, def: 0, rewardExp: 20, rewardCoin: [5, 15], drops: ["藥水", "鐵劍", "矛", "盾牌"], lvl: [1, 10] },
-                { name: "哥布林", img: '../img/哥布林.png', hp: 60, atk: 15, def: 10, rewardExp: 40, rewardCoin: [10, 20], drops: ["斧刀", "鎖子甲", "中型回血藥水", "中型魔力藥水"], lvl: [5, 20] },
-                { name: "骷髏兵", img: '../img/骷髏頭.png', hp: 200, atk: 30, def: 20, rewardExp: 100, rewardCoin: [15, 25], drops: ["神劍", "金鐘罩"], lvl: [10, 30] }
+                { name: "史萊姆", img: '../img/史萊姆.png', hp: 30, atk: 5, def: 0, rewardExp: 40, rewardCoin: [5, 15], drops: ["藥水", "鐵劍", "矛", "盾牌"], lvl: [1, 10] },
+                { name: "哥布林", img: '../img/哥布林.png', hp: 60, atk: 15, def: 10, rewardExp: 80, rewardCoin: [10, 20], drops: ["斧刀", "鎖子甲", "中型回血藥水", "中型魔力藥水"], lvl: [5, 20] },
+                { name: "骷髏兵", img: '../img/骷髏頭.png', hp: 200, atk: 30, def: 20, rewardExp: 200, rewardCoin: [15, 25], drops: ["神劍", "金鐘罩"], lvl: [10, 30] }
             ];
             let enemy = { ...enemies[Math.floor(Math.random() * enemies.length)] }
             let minLvl = enemy.lvl[0];
             let maxLvl = enemy.lvl[1];
             let lvl = Math.floor(Math.random() * (maxLvl - minLvl + 1)) + minLvl;
-            enemy.hp += (lvl - 1) * 5
-            enemy.atk += (lvl - 1) * 5
-            enemy.def += (lvl - 1) * 5
-            enemy.rewardExp += (lvl - 1) * 5
+            enemy.hp += (lvl - 1) * 4
+            enemy.atk += (lvl - 1) * 4
+            enemy.def += (lvl - 1) * 4
+            enemy.rewardExp += (lvl - 1) * 4
             enemy.lvl = lvl
             return enemy;
         }
@@ -372,14 +393,14 @@
             "小型魔力藥水": { rate: 50, price: 50, name: "小型魔力藥水", type: "consumable", effect: { hp: 40 }, content: "回復40mp" },
             "中型回血藥水": { rate: 50, price: 100, name: "中型回血藥水", type: "consumable", effect: { hp: 100 }, content: "回復100hp" },
             "中型魔力藥水": { rate: 50, price: 100, name: "中型魔力藥水", type: "consumable", effect: { hp: 100 }, content: "回復100mp" },
-            "寶箱": { rate: 50, price: 200, name: "寶箱", type: "consumable", content: "拿去商店賣值個好價錢" },
-            "矛": { rate: 30, price: 300, name: "矛", type: "weapon", atk: 10, content: "+10攻擊力，隔壁老王都說我猛" },
-            "盾牌": { rate: 30, price: 300, name: "盾牌", type: "armor", def: 5, content: "+5防禦力，有點硬起來了" },
-            "鐵劍": { rate: 30, price: 150, name: "鐵劍", type: "weapon", atk: 5, quantity: 1, content: "+5攻擊力，有點攻擊但不多" },
-            "斧刀": { rate: 30, price: 550, name: "斧刀", type: "weapon", atk: 50, quantity: 1, content: "+50攻擊力，可以砍樹，也可以砍人" },
+            "寶箱": { rate: 50, price: 400, name: "寶箱", type: "consumable", content: "拿去商店賣值個好價錢" },
+            "矛": { rate: 30, price: 300, name: "矛", type: "weapon", atk: 20, content: "+10攻擊力，隔壁老王都說我猛" },
+            "盾牌": { rate: 30, price: 300, name: "盾牌", type: "armor", def: 15, content: "+5防禦力，有點硬起來了" },
+            "鐵劍": { rate: 30, price: 150, name: "鐵劍", type: "weapon", atk: 15, quantity: 1, content: "+5攻擊力，有點攻擊但不多" },
+            "斧刀": { rate: 30, price: 550, name: "斧刀", type: "weapon", atk: 60, quantity: 1, content: "+50攻擊力，可以砍樹，也可以砍人" },
             "神劍": { rate: 30, price: 5000, name: "神劍", type: "weapon", atk: 1000, quantity: 1, content: "+1000攻擊力，天啊外掛武器" },
             "金鐘罩": { rate: 20, price: 5000, name: "金鐘罩", type: "armor", def: 1000, quantity: 1, content: "+1000防禦力，太硬了吧，沒人打得穿" },
-            "鎖子甲": { rate: 20, price: 550, name: "鎖子甲", type: "armor", def: 50, quantity: 1, content: "+50防禦力，似乎很可靠，刀槍blue" }
+            "鎖子甲": { rate: 20, price: 550, name: "鎖子甲", type: "armor", def: 60, quantity: 1, content: "+50防禦力，似乎很可靠，刀槍blue" }
         };
         // === 天賦資料庫 ===
         const talents = [
@@ -391,7 +412,7 @@
             { name: "財神附體", desc: "戰鬥獲得金幣 +20%", effect: { coinBonus: "*1.2" } },
             { name: "幸運加護", desc: "掉寶率 +10%", effect: { dropRate: "*1.1" } },
             { name: "魔法大師", desc: "最大魔力 +200", effect: { maxMP: "+200" } },
-            { name: "巨力神臂", desc: "攻擊 +25%，防禦 +10%", effect: { atkPercent: "*2.5", defPercent: "*1.1" } },
+            { name: "巨力神臂", desc: "攻擊 +25%，防禦 +10%", effect: { atkPercent: "*1.25", defPercent: "*1.1" } },
             { name: "修練聖體", desc: "獲得經驗值+1000% +200", effect: { expRate: "*11" } },
         ];
 
@@ -502,15 +523,16 @@
 
             // === 套用天賦加成（結算區）===
             const stats = {
-                atk: Math.round(atkBase * (1 + (player.talentEffect.atkPercent || 0) / 100)),
-                def: Math.round(defBase * (1 + (player.talentEffect.defPercent || 0) / 100)),
-                maxHP: Math.round(hpBase + (player.talentEffect.maxHP || 0)),
-                maxMP: Math.round(mpBase),
+                atk: Math.round((atkBase + (player.statBonus.atk || 0)) * (1 + (player.talentEffect.atkPercent || 0) / 100)),
+                def: Math.round((defBase + (player.statBonus.def || 0)) * (1 + (player.talentEffect.defPercent || 0) / 100)),
+                maxHP: Math.round((hpBase + (player.statBonus.hp || 0)) + (player.talentEffect.maxHP || 0)),
+                maxMP: Math.round((mpBase + (player.statBonus.mp || 0))),
                 expRate: 1 + (player.talentEffect.expRate || 0) / 100,
                 coinRate: 1 + (player.talentEffect.coinBonus || 0) / 100,
                 trainRate: 1 + (player.talentEffect.trainBoost || 0) / 100,
                 dropRate: 0.5 + (player.talentEffect.dropRate || 0) / 100
             };
+
 
             return stats;
         }
@@ -532,12 +554,13 @@
             document.getElementById('atk').innerText = stats.atk;
             document.getElementById('def').innerText = stats.def;
             document.getElementById('coin').innerText = player.coin;
+            refreshStatPanel();
         }
         stats = calculateStats(player);
 
         function openStatPanel() {
             const iframe = document.getElementById('gameFrame');
-            const stats = calculateStats(player);
+            const stats = calculateStats(player); // ✅ 取得加成後的最終屬性
 
             iframe.srcdoc = `
     <html>
@@ -546,80 +569,114 @@
       </head>
       <body style="font-family:sans-serif; text-align:center; background:#f5f5dc; min-height:100vh;">
         <div class="container py-4">
-          <h1 class="mb-4">⚙️ 人物加點</h1>
+          <h1 class="mb-4">人物加點</h1>
           <p>等級：${player.lvl}</p>
           <p>可用屬性點：<strong id="points">${player.statPoints}</strong></p>
 
           <table class="table table-bordered w-50 mx-auto">
-            <tr><th>屬性</th><th>當前值</th><th>操作</th></tr>
+            <tr><th>屬性</th><th>當前值（含加成）</th><th>操作</th></tr>
             <tr>
               <td>攻擊力</td>
-              <td id="atkVal">${player.atk}</td>
+              <td id="atkVal">${stats.atk}</td>
               <td><button class="btn btn-sm btn-success" onclick="parent.addStat('atk')">+1</button></td>
             </tr>
             <tr>
               <td>防禦力</td>
-              <td id="defVal">${player.def}</td>
+              <td id="defVal">${stats.def}</td>
               <td><button class="btn btn-sm btn-success" onclick="parent.addStat('def')">+1</button></td>
             </tr>
             <tr>
               <td>最大生命</td>
-              <td id="hpVal">${player.maxHP}</td>
+              <td id="hpVal">${stats.maxHP}</td>
               <td><button class="btn btn-sm btn-success" onclick="parent.addStat('hp')">+10</button></td>
             </tr>
             <tr>
               <td>最大魔力</td>
-              <td id="mpVal">${player.maxMP}</td>
+              <td id="mpVal">${stats.maxMP}</td>
               <td><button class="btn btn-sm btn-success" onclick="parent.addStat('mp')">+10</button></td>
             </tr>
           </table>
 
+          <button class="btn btn-warning mt-3 me-3" onclick="parent.resetStats()">重置屬性點</button>
           <button class="btn btn-primary mt-4" onclick="parent.loadTown()">返回城鎮</button>
         </div>
       </body>
     </html>`;
         }
 
+
         function addStat(type) {
             if (player.statPoints <= 0) {
-                notify("❌ 沒有剩餘屬性點！", "#ffd1d1");
+                notify("❌ 沒有可分配的屬性點！", "#ffd1d1");
                 return;
             }
 
             switch (type) {
-                case 'atk':
-                    player.atk += 1;
+                case "atk":
+                    player.statBonus.atk += 1;
                     break;
-                case 'def':
-                    player.def += 1;
+                case "def":
+                    player.statBonus.def += 1;
                     break;
-                case 'hp':
-                    player.maxHP += 10;
-                    player.currentHP = player.maxHP;
+                case "hp":
+                    player.statBonus.hp += 10; // 每點加10HP
                     break;
-                case 'mp':
-                    player.maxMP += 10;
-                    player.currentMP = player.maxMP;
+                case "mp":
+                    player.statBonus.mp += 10; // 每點加10MP
                     break;
             }
 
             player.statPoints -= 1;
             savePlayer();
             updateBars();
-
-            // 即時更新畫面
-            const iframe = document.getElementById('gameFrame');
-            const doc = iframe.contentDocument || iframe.contentWindow.document;
-            if (doc) {
-                if (doc.getElementById('points')) doc.getElementById('points').textContent = player.statPoints;
-                if (doc.getElementById('atkVal')) doc.getElementById('atkVal').textContent = player.atk;
-                if (doc.getElementById('defVal')) doc.getElementById('defVal').textContent = player.def;
-                if (doc.getElementById('hpVal')) doc.getElementById('hpVal').textContent = player.maxHP;
-                if (doc.getElementById('mpVal')) doc.getElementById('mpVal').textContent = player.maxMP;
-            }
-
-            notify("✨ 屬性點分配成功！", "#d1ffd1");
+            refreshStatPanel();
+            notify(`已加點 ${type.toUpperCase()}！剩餘點數：${player.statPoints}`, "#d1ffd1");
         }
+        function resetStats() {
+            if (!confirm("是否確定要重置所有屬性點？")) return;
+
+            // 🧮 統計退還的點數
+            const totalReturned =
+                player.statBonus.atk +
+                player.statBonus.def +
+                player.statBonus.hp / 10 +
+                player.statBonus.mp / 10;
+
+            // 清空加成
+            player.statBonus = { atk: 0, def: 0, hp: 0, mp: 0 };
+            player.statPoints += totalReturned;
+
+            savePlayer();
+            updateBars();
+            refreshStatPanel();
+            notify(` 已重置所有屬性點！返還 ${totalReturned} 點`, "#fff8d6");
+        }
+
+
+        function refreshStatPanel() {
+            const iframe = document.getElementById('gameFrame');
+            const doc = iframe?.contentDocument || iframe?.contentWindow?.document;
+            if (!doc) return;
+
+            // 只在「人物加點」畫面時更新
+            const title = doc.querySelector("h1")?.innerText || "";
+            if (!title.includes("人物加點")) return;
+
+            // ✅ 重新計算最終屬性值
+            const stats = calculateStats(player);
+
+            // 更新所有欄位
+            if (doc.getElementById('points')) doc.getElementById('points').textContent = player.statPoints;
+            if (doc.getElementById('atkVal')) doc.getElementById('atkVal').textContent = stats.atk;
+            if (doc.getElementById('defVal')) doc.getElementById('defVal').textContent = stats.def;
+            if (doc.getElementById('hpVal')) doc.getElementById('hpVal').textContent = stats.maxHP;
+            if (doc.getElementById('mpVal')) doc.getElementById('mpVal').textContent = stats.maxMP;
+
+            // 更新等級文字
+            const lvlP = Array.from(doc.querySelectorAll("p")).find(p => p.innerText.includes("等級"));
+            if (lvlP) lvlP.innerText = `等級：${player.lvl}`;
+        }
+
 
 
         function restAtInn() {
@@ -855,7 +912,7 @@
                     btn.onclick = () => {
                         notify(`領取獎勵: 錢 ${task.rewards.coin}, 經驗 ${task.rewards.exp}, 物品 ${task.rewards.items.join(', ')}`, "#d1ffd1");
                         // 真正給獎勵
-                        player.gainExp(task.rewards.exp * stats.expRate);
+                        player.gainExp(task.rewards.exp);
                         player.coin += Math.round(task.rewards.coin * stats.coinRate);
                         if (task.rewards.items && task.rewards.items.length > 0) {
                             task.rewards.items.forEach(itemName => {
@@ -1244,7 +1301,7 @@
 
             trainingInterval = setInterval(() => {
                 const stats = calculateStats(player);
-                const gain = Math.round(player.train * stats.expRate * stats.trainRate); // ✅ 只吃訓練加成
+                const gain = Math.round(player.train * stats.trainRate); // ✅ 只吃訓練加成
                 // console.log("訓練加成倍率:", stats.trainRate, "gain:", gain);
                 player.gainExp(gain);
                 savePlayer();
@@ -1584,7 +1641,7 @@
             const stats = calculateStats(player);
 
             // 🎖️ 經驗與金幣結算
-            const expGain = Math.round(enemy.rewardExp * stats.expRate);
+            const expGain = Math.round(enemy.rewardExp);
             const gold = Math.floor(Math.random() * (enemy.rewardCoin[1] - enemy.rewardCoin[0] + 1)) + enemy.rewardCoin[0];
             const goldGain = Math.round(gold * stats.coinRate);
 
@@ -1801,7 +1858,8 @@
                 },
                 talentSlots: player.talentSlots || [],
                 statPoints: player.statPoints,
-                totalStatPoints: player.totalStatPoints
+                totalStatPoints: player.totalStatPoints,
+                statBonus: player.statBonus,
             };
             localStorage.setItem('playerData', JSON.stringify(data));
         }
@@ -1829,6 +1887,7 @@
                 player.talentSlots = data.talentSlots || []
                 player.statPoints = data.statPoints ?? player.statPoints;
                 player.totalStatPoints = data.totalStatPoints ?? player.totalStatPoints;
+                player.statBonus = data.statBonus || { atk: 0, def: 0, hp: 0, mp: 0 };
             }
             updateBars();
         }
