@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="../js/head.js"></script>
+</head>
+
+<body>
+    <script src="../js/main.js"></script>
+    <script>load_navbar("../web/")</script>
+    <div class=" cent my-3 ">
+        <div class="card">
+            <div class="card-body">
+
+
+
+                <table class="table  text-center" id="tb">
+                    <thead>
+                        <th>math</th>
+                        <th>english</th>
+                        <th>programming</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>90</td>
+                            <td>60</td>
+                            <td>80</td>
+                        </tr>
+                        <tr>
+                            <td>80</td>
+                            <td>86</td>
+                            <td>98</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="">
+
+                <strong>table width</strong>
+
+                <button class="btn btn-outline-secondary" onclick="width(200)">200px</button>
+                <button class="btn btn-outline-secondary" onclick="width(500)">500px</button>
+                <br>
+                <strong>border</strong>
+
+                <button class="btn btn-outline-secondary" onclick="border(1)">1px</button>
+                <button class="btn btn-outline-secondary" onclick="border(10)">10px</button>
+                <button class="btn btn-outline-secondary" onclick="border(20)">20px</button>
+                <br>
+                <strong>table color</strong>
+
+                <button class="btn " style="background-color: aqua;" onclick="color('aqua')">color</button>
+                <button class="btn " style="background-color: gray;" onclick="color('gray')">color</button>
+                <button class="btn " style="background-color: greenyellow;" onclick="color('greenyellow')">color</button>
+                <br>
+                <strong>reset</strong>
+
+                <button class="btn btn-outline-secondary" onclick="reset_tb()">reset</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const table = document.getElementById("tb");
+
+
+
+        function width(value) {
+            table.style.width = value + "px";
+        }
+
+        function border(value) {
+            table.style.border = value + "px solid black";
+        }
+
+        function color(value) {
+            table.style.backgroundColor = value;
+        }
+
+        function reset_tb() {
+            table.style.width = "";
+            table.style.border = "";
+            table.style.backgroundColor = "";
+        }
+
+    </script>
+</body>
+
+</html>

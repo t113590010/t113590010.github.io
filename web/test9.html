@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="../js/head.js"></script>
+
+</head>
+<body>
+    
+</body>
+</html>
+
+    <script src="../js/main.js"></script>
+    <script>load_navbar("../web/")</script>
+<script>
+    
+    html ="<table class='table'>"
+    
+    for (let j = 1; j < 10; j++) {
+        html+="<tr>"
+        for (let i = 2; i < 10; i++) {
+            html+= "<td>"+i+"*"+j+"="+i*j+"    </td>"
+            
+        }
+        html+="</tr>"
+    }
+    html+="</table>"
+ 
+       document.write(html)
+</script>
