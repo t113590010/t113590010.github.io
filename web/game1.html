@@ -19,7 +19,7 @@
         <div class="card col-12 col-md-9 col-lg-9 m-5 rounded shadow ">
             <div class="card-body " style="min-height: 70vh;">
                 <div class="row">
-                    <div class="col">
+                    <!-- <div class="col">
                         <label for="">血量</label>
                         <div class="progress" style="height: 30px;  background-color: beige;">
                             <div class="progress-bar bg-danger " role="progressbar" style="width: 100%;" id="hp_bar">
@@ -34,14 +34,62 @@
 
                             </div>
                         </div>
-                    </div>
-                    <div class="col">
+                    </div> -->
+                    <!-- <div class="col">
                         <label for="">經驗</label>
                         <div class="progress " style="height: 30px; background-color: beige;">
                             <div class="progress-bar bg-warning " role="progressbar" style="width: 0%;" id="exp_bar">
                                 0%
                             </div>
 
+                        </div>
+                    </div> -->
+                    <div class="col">
+                        <label for="">血量</label>
+                        <div class="progress" style="height: 30px; background-color: beige; position: relative;">
+                            <div class="progress-bar bg-danger" role="progressbar" id="hp_bar" style="height:100%;">
+                            </div>
+                            <span id="hp_text" style="
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    color:black;
+    pointer-events: none;
+  ">0/100</span>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <label for="">魔力</label>
+                        <div class="progress" style="height: 30px; background-color: beige; position: relative;">
+                            <div class="progress-bar bg-primary" role="progressbar" id="mage_bar" style="height:100%;">
+                            </div>
+                            <span id="mage_text" style="
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    color:black;
+    pointer-events: none;
+  ">0/100</span>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <label for="">經驗</label>
+                        <div class="progress" style="height: 30px; background-color: beige; position: relative;">
+                            <div class="progress-bar bg-warning" role="progressbar" id="exp_bar" style="height:100%;">
+                            </div>
+                            <span id="exp_text" style="
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    color:black;
+    pointer-events: none;
+  ">0/100</span>
                         </div>
                     </div>
                     <div class="col-auto">
@@ -132,12 +180,59 @@
     font-size: 14px;
     z-index: 2000;
 "></div>
+        <!-- 🏙 城市模式技能面板（雙欄） -->
+        <div id="citySkillOverlay" style="display:none; position:fixed; top:15%; left:50%; transform:translateX(-50%);
+  background:rgba(40,40,40,0.95); color:white; padding:20px; border:2px solid #aaa;
+  border-radius:10px; width:700px; height:70vh; overflow:hidden; z-index:1000;
+  flex-direction:column;">
+            <h3 style="margin-top:0; text-align:center;">技能管理</h3>
+            <div style="display:flex; gap:20px; flex:1; overflow:hidden;">
+
+                <!-- 左邊：目前戰鬥技能欄 -->
+                <div style="flex:1; border-right:1px solid #555; overflow-y:auto; padding-right:10px;">
+                    <h4>目前戰鬥技能欄</h4>
+                    <div id="battleSkillList"></div>
+                </div>
+
+                <!-- 右邊：所有已學技能 -->
+                <div style="flex:1; overflow-y:auto;">
+                    <h4>可設定技能</h4>
+                    <div id="citySkillList"></div>
+                </div>
+
+            </div>
+            <button onclick="closeCitySkill()" style="margin-top:10px; padding:6px 10px; border:none; border-radius:6px; cursor:pointer;
+                 background:#555; color:white;">關閉</button>
+        </div>
+        <!-- ⚔️ 戰鬥模式技能欄 -->
+        <!-- ⚔️ 戰鬥技能列 -->
+        <div id="battleSkillBar" style="
+  display:none;
+  position:fixed;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  gap:10px;
+  background:rgba(20,20,20,0.8);
+  padding:8px 12px;
+  border-radius:10px;
+  z-index:900;
+  flex-direction:row;
+  justify-content:center;
+  align-items:center;
+">
+        </div>
+
+
     </div>
 
     <script>
         const exp_bar = document.getElementById("exp_bar");
+        const exp_text = document.getElementById("exp_text");
         const hp_bar = document.getElementById("hp_bar");
+        const hp_text = document.getElementById("hp_text");
         const mage_bar = document.getElementById("mage_bar");
+        const mage_text = document.getElementById("mage_text");
         class Character {
             constructor(name, maxHP, maxMP) {
                 this.name = name;
@@ -172,6 +267,8 @@
                 this.statPoints = 0;
                 this.totalStatPoints = 0;
                 this.statBonus = { atk: 0, def: 0, hp: 0, mp: 0 }; // 額外加點加成
+                this.skills = []
+                this.equipSkills = []
             }
             takeDamage(amount) {
                 this.currentHP -= amount;
@@ -204,10 +301,10 @@
 
                     this.currentHP = this.maxHP;
                     this.currentMP = this.maxMP;
-                    this.maxHP+=10;
-                    this.maxMP+=10;
-                    this.atk+=1;
-                    this.def+=1;
+                    this.maxHP += 10;
+                    this.maxMP += 10;
+                    this.atk += 1;
+                    this.def += 1;
                     this.statPoints = (this.statPoints || 0) + 5;
                     leveledUp = true;
                 }
@@ -232,51 +329,107 @@
 
 
             addItem(item) {
-                const base = itemDatabase[item.name];
-                if (!base) return notify(`❌ 資料庫裡沒有 ${item.name}`, "#ffd1d1");
+                // 🧩 從 itemDatabase 嘗試找物品資料
+                let base = itemDatabase[item.name];
 
-                // 🧪 若是消耗品（可堆疊）
+                // 🔍 若在 itemDatabase 找不到 → 嘗試判斷是否是技能書
+                if (!base) {
+                    const maybeSkill = item.name.replace("書", ""); // 去掉「書」字
+                    const skillData = skillDatabase[maybeSkill];
+
+                    if (skillData) {
+                        base = {
+                            name: item.name,
+                            type: "skillBook",
+                            price: skillData.price || 100,
+                            skillRef: maybeSkill,
+                            desc: `可學會技能：${maybeSkill}（${skillData.desc}）`,
+                        };
+                    }
+                }
+
+                // ❌ 如果還是沒找到
+                if (!base) {
+                    notify(`❌ 資料庫裡沒有 ${item.name}`, "#ffd1d1");
+                    return;
+                }
+
+                // ===============================
+                // 🧪 【消耗品】可堆疊
+                // ===============================
                 if (base.type === "consumable") {
                     const existing = this.inventory.find(i => i.name === item.name);
                     if (existing) {
                         existing.quantity += item.quantity || 1;
                     } else {
                         this.inventory.push({
-                            id: Date.now() + Math.random(), // 🔹 統一生成唯一 ID
+                            id: Date.now() + Math.random(),
                             name: item.name,
                             quantity: item.quantity || 1,
                             type: base.type,
                             price: base.price || 10,
-                            effect: base.effect || null
+                            effect: base.effect || null,
+                            content: base.content || null
                         });
                     }
                 }
-                // ⚙️ 若是裝備（不可堆疊）
+
+                // ===============================
+                // ⚔️ 【裝備】不可堆疊
+                // ===============================
                 else if (base.type === "weapon" || base.type === "armor") {
                     this.inventory.push({
-                        id: Date.now() + Math.random(), // 🆔 唯一 ID
+                        id: Date.now() + Math.random(),
                         name: item.name,
                         quantity: 1,
                         type: base.type,
                         price: base.price || 10,
                         atk: base.atk || 0,
                         def: base.def || 0,
-                        enhancement: item.enhancement || 0
+                        enhancement: item.enhancement || 0,
+                        content: base.content || null
                     });
                 }
-                // 🧾 其他類型
+
+                // ===============================
+                // 📘 【技能書】特殊邏輯
+                // ===============================
+                else if (base.type === "skillBook") {
+                    const existing = this.inventory.find(i => i.name === item.name);
+                    if (existing) {
+                        existing.quantity += item.quantity || 1;
+                    } else {
+                        this.inventory.push({
+                            id: Date.now() + Math.random(),
+                            name: base.name,
+                            quantity: item.quantity || 1,
+                            type: "skillBook",
+                            price: base.price,
+                            skillRef: base.skillRef,
+                            desc: base.desc
+                        });
+                    }
+                }
+
+                // ===============================
+                // 🧾 【其他雜項】
+                // ===============================
                 else {
                     this.inventory.push({
                         id: Date.now() + Math.random(),
                         name: item.name,
                         quantity: item.quantity || 1,
                         type: base.type || "misc",
-                        price: base.price || 10
+                        price: base.price || 10,
+                        content: base.content || null
                     });
                 }
 
+                // 💾 存檔並提示
                 savePlayer();
+                notify(`📦 獲得物品：${item.name}`, "#d1ffd1");
             }
+
 
 
 
@@ -286,9 +439,31 @@
                 if (!item) return notify(`找不到 ${itemName}`, "#ffd1d1");
                 if (item.quantity < quantity) return notify(`${itemName} 數量不足`, "#ffd1d1");
 
-                const base = itemDatabase[item.name];
-                if (!base) return notify(`${itemName} 不存在於資料庫`, "#ffd1d1");
+                // 優先查物品資料庫
+                let base = itemDatabase[item.name];
 
+                // 🔹 若物品資料庫沒有，就檢查技能書
+                if (!base && item.type === "skillBook") {
+                    const skillName = item.skillRef;
+                    const skillData = skillDatabase[skillName];
+                    if (skillData) {
+                        base = {
+                            name: item.name,
+                            type: "skillBook",
+                            skillRef: skillName,
+                            price: skillData.price,
+                            desc: skillData.desc,
+                        };
+                    }
+                }
+
+                // 若仍然沒找到，提示錯誤
+                if (!base) {
+                    notify(`${itemName} 不存在於資料庫`, "#ffd1d1");
+                    return;
+                }
+
+                // 🧪 消耗品
                 if (base.type === 'consumable' && base.effect) {
                     if (base.effect.hp) {
                         this.heal(base.effect.hp * quantity);
@@ -302,13 +477,41 @@
                     item.quantity -= quantity;
                     if (item.quantity <= 0)
                         this.inventory = this.inventory.filter(i => i.name !== itemName);
-                } else if (base.type === 'weapon' || base.type === 'armor') {
+                }
+
+                // ⚙️ 裝備類
+                else if (base.type === 'weapon' || base.type === 'armor') {
                     this.equip(itemName);
+                }
+
+                // 📘 技能書
+                else if (base.type === "skillBook") {
+                    const skillName = base.skillRef;
+                    const skillData = skillDatabase[skillName];
+
+                    if (!skillData) {
+                        notify("這本書上的字你看不懂...", "#ffd1d1");
+                        return;
+                    }
+
+                    const alreadyLearned = this.skills.some(s => s.name === skillName);
+                    if (alreadyLearned) {
+                        notify(`📖 你已經學會 ${skillName}，書頁發光後自動合上。`, "#fff8d6");
+                        return; // ❗ 不消耗
+                    }
+
+                    this.skills.push({ name: skillName, lvl: 1 });
+                    notify(`🎉 學會新技能：${skillName}！`, "#d1ffd1");
+
+                    item.quantity -= 1;
+                    if (item.quantity <= 0)
+                        this.inventory = this.inventory.filter(i => i.name !== itemName);
                 }
 
                 savePlayer();
                 updateBars();
             }
+
 
 
 
@@ -400,9 +603,18 @@
             "斧刀": { rate: 30, price: 550, name: "斧刀", type: "weapon", atk: 60, quantity: 1, content: "+60攻擊力，可以砍樹，也可以砍人" },
             "神劍": { rate: 30, price: 5000, name: "神劍", type: "weapon", atk: 1000, quantity: 1, content: "+1000攻擊力，天啊外掛武器" },
             "金鐘罩": { rate: 20, price: 5000, name: "金鐘罩", type: "armor", def: 1000, quantity: 1, content: "+1000防禦力，太硬了吧，沒人打得穿" },
-            "鎖子甲": { rate: 20, price: 550, name: "鎖子甲", type: "armor", def: 60, quantity: 1, content: "+60防禦力，似乎很可靠，刀槍blue" }
+            "鎖子甲": { rate: 20, price: 550, name: "鎖子甲", type: "armor", def: 60, quantity: 1, content: "+60防禦力，似乎很可靠，刀槍blue" },
+
+
         };
         // === 天賦資料庫 ===
+        const skillDatabase = {
+            "火球術": { rate: 30, price: 500, mpCost: 10, power: 30, desc: "對敵人造成自身攻擊力100%+30 點火焰傷害", type: "attack" },
+            "治癒術": { rate: 30, price: 300, mpCost: 8, power: 25, desc: "恢復自身 10% HP", type: "heal" },
+            "強化": { rate: 30, price: 300, mpCost: 12, power: 0, desc: "提升攻擊力 20% 持續 3 回合", type: "buff" },
+            "弱化": { rate: 30, price: 300, mpCost: 12, power: 0, desc: "削弱對方攻擊力 20% 持續 3 回合", type: "debuff" },
+            "冰凍術": { rate: 30, price: 300, mpCost: 12, power: 30, desc: "對敵人造成自身攻擊力100%+30 點冰凍傷害 冰凍 1 回合", type: "control" },
+        };
         const talents = [
             { name: "強壯體魄", desc: "最大生命 +50", effect: { maxHP: "+50" } },
             { name: "精準打擊", desc: "攻擊力 +10%", effect: { atkPercent: "*1.1" } },
@@ -542,13 +754,13 @@
             stats = calculateStats(player);
 
             hp_bar.style.width = (player.currentHP / stats.maxHP * 100) + "%";
-            hp_bar.innerText = player.currentHP + "/" + stats.maxHP;
+            hp_text.innerText = player.currentHP + "/" + stats.maxHP;
 
             mage_bar.style.width = (player.currentMP / stats.maxMP * 100) + "%";
-            mage_bar.innerText = player.currentMP + "/" + stats.maxMP;
+            mage_text.innerText = player.currentMP + "/" + stats.maxMP;
 
             exp_bar.style.width = (player.exp / player.maxExp) * 100 + "%";
-            exp_bar.innerText = player.exp + "/" + player.maxExp;
+            exp_text.innerText = player.exp + "/" + player.maxExp;
 
             document.getElementById('lvl').innerText = player.lvl;
             document.getElementById('atk').innerText = stats.atk;
@@ -557,6 +769,350 @@
             refreshStatPanel();
         }
         stats = calculateStats(player);
+
+        // 🏙 城市技能管理（使用 equipSkills）
+        function openCitySkill() {
+            const overlay = document.getElementById('citySkillOverlay');
+            const cityList = document.getElementById('citySkillList');
+            const equipList = document.getElementById('battleSkillList');
+            cityList.innerHTML = '';
+            equipList.innerHTML = '';
+
+            // 初始化
+            if (!player.equipSkills) player.equipSkills = [];
+
+            // -----------------------------
+            // 🧩 左側 — 目前裝備的技能
+            // -----------------------------
+            if (player.equipSkills.length === 0) {
+                equipList.innerHTML = '<p style="color:#aaa;">尚未裝備任何技能。</p>';
+            } else {
+                player.equipSkills.forEach((skillName, index) => {
+                    const data = skillDatabase[skillName];
+                    if (!data) return;
+
+                    const div = document.createElement('div');
+                    div.setAttribute('style', `
+                border-bottom:1px solid #555;
+                padding:6px; margin-bottom:4px;
+                display:flex; flex-direction:column;
+            `);
+                    div.innerHTML = `
+                <b>${skillName}</b><br>
+                <small>${data.desc}</small>
+            `;
+
+                    // 按鈕群組
+                    const btnGroup = document.createElement('div');
+                    btnGroup.setAttribute('style', 'margin-top:5px; display:flex; gap:5px;');
+
+                    const upBtn = document.createElement('button');
+                    upBtn.innerText = '⬆️';
+                    upBtn.setAttribute('style', `
+                padding:2px 6px; border:none; border-radius:4px;
+                background:#777; color:white; cursor:pointer;
+            `);
+                    upBtn.onclick = () => moveEquipSkill(index, -1);
+
+                    const downBtn = document.createElement('button');
+                    downBtn.innerText = '⬇️';
+                    downBtn.setAttribute('style', `
+                padding:2px 6px; border:none; border-radius:4px;
+                background:#777; color:white; cursor:pointer;
+            `);
+                    downBtn.onclick = () => moveEquipSkill(index, 1);
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.innerText = '❌ 卸下';
+                    removeBtn.setAttribute('style', `
+                padding:4px 8px; border:none; border-radius:4px;
+                background:#a33; color:white; cursor:pointer;
+            `);
+                    removeBtn.onclick = () => unequipSkill(skillName);
+
+                    btnGroup.appendChild(upBtn);
+                    btnGroup.appendChild(downBtn);
+                    btnGroup.appendChild(removeBtn);
+                    div.appendChild(btnGroup);
+                    equipList.appendChild(div);
+                });
+            }
+
+            // -----------------------------
+            // 🧩 右側 — 已學技能（可裝備）
+            // -----------------------------
+            if (!player.skills || player.skills.length === 0) {
+                cityList.innerHTML = '<p>尚未學會任何技能。</p>';
+            } else {
+                player.skills.forEach(skill => {
+                    const data = skillDatabase[skill.name];
+                    const div = document.createElement('div');
+                    div.setAttribute('style', `
+                border-bottom:1px solid #555;
+                padding:6px; margin-bottom:4px;
+            `);
+
+                    const isEquipped = player.equipSkills.includes(skill.name);
+                    div.innerHTML = `
+                <b>${skill.name}</b> (Lv.${skill.lvl || 1})<br>
+                <small>${data.desc}</small><br>
+                MP消耗：${data.mpCost}
+            `;
+
+                    const btn = document.createElement('button');
+                    btn.innerText = isEquipped ? '🟢 已裝備' : '⚔️ 裝備技能';
+                    btn.disabled = isEquipped;
+                    btn.setAttribute('style', `
+                margin-top:5px; padding:4px 8px;
+                ${isEquipped
+                            ? 'background:#2a2a2a; color:#aaa; cursor:default; border:1px solid #666;'
+                            : 'background:#007bff; color:white; cursor:pointer; border:none;'}
+                border-radius:4px;
+            `);
+                    if (!isEquipped) btn.onclick = () => equipSkill(skill.name);
+
+                    div.appendChild(btn);
+                    cityList.appendChild(div);
+                });
+            }
+
+            overlay.style.display = 'block';
+            loadBattleSkillBar()
+        }
+
+        // 🧩 關閉介面
+        function closeCitySkill() {
+            document.getElementById('citySkillOverlay').style.display = 'none';
+        }
+
+        // ⚔️ 裝備技能
+        function equipSkill(skillName) {
+            if (!player.equipSkills) player.equipSkills = [];
+            if (player.equipSkills.includes(skillName))
+                return notify(`⚠️ ${skillName} 已經裝備`, "#fff8d6");
+
+            // 限制裝備數量（例如最多4個）
+            if (player.equipSkills.length >= 4)
+                return notify(`⚠️ 你最多只能裝備4個技能`, "#ffd1d1");
+
+            player.equipSkills.push(skillName);
+            notify(`✅ 已裝備 ${skillName}`, "#d1ffd1");
+            savePlayer();
+            openCitySkill();
+        }
+
+        // ❌ 卸下技能
+        function unequipSkill(skillName) {
+            player.equipSkills = player.equipSkills.filter(s => s !== skillName);
+            notify(`❌ 已卸下 ${skillName}`, "#ffd1d1");
+            savePlayer();
+            openCitySkill();
+        }
+
+        // ↕️ 移動技能順序
+        function moveEquipSkill(index, direction) {
+            const arr = player.equipSkills;
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= arr.length) return;
+            const temp = arr[index];
+            arr[index] = arr[newIndex];
+            arr[newIndex] = temp;
+            notify(`↕️ 已調整技能順序`, "#fff8d6");
+            savePlayer();
+            openCitySkill();
+        }
+
+        // ⚔️ 戰鬥技能列（顯示 equipSkills）
+        function loadBattleSkillBar() {
+            const bar = document.getElementById('battleSkillBar');
+            bar.innerHTML = '';
+
+            // 🧩 檢查是否存在技能欄
+            if (!player.equipSkills || player.equipSkills.length === 0) {
+                bar.style.display = 'flex'; // 保留外觀
+                bar.innerHTML = `<span style="color:#888;">目前沒有裝備任何技能</span>`;
+                return;
+            }
+
+            // 🧩 生成技能按鈕
+            player.equipSkills.forEach(skillName => {
+                const btn = document.createElement('button');
+                btn.innerText = skillName;
+                btn.setAttribute('style', `
+            padding:8px 12px;
+            font-size:14px;
+            border:none;
+            border-radius:6px;
+            background:#444;
+            color:white;
+            cursor:pointer;
+            transition:background 0.2s;
+        `);
+                btn.onclick = () => useSkill(skillName);
+                btn.onmouseenter = () => btn.style.background = '#666';
+                btn.onmouseleave = () => btn.style.background = '#444';
+                bar.appendChild(btn);
+            });
+
+            bar.style.display = 'flex';
+        }
+
+
+        // 隱藏戰鬥技能列
+        function hideBattleSkillBar() {
+            document.getElementById('battleSkillBar').style.display = 'none';
+        }
+
+
+
+
+        function useSkill(name) {
+            const skill = skillDatabase[name];
+            if (!skill) return notify("未知技能", "#ffd1d1");
+
+            if (player.currentMP < skill.mpCost) {
+                notify("❌ MP 不足，無法施放技能！", "#ffd1d1");
+                return;
+            }
+
+            const stats = calculateStats(player);
+            const enemy = window.currentEnemy;
+            if (!enemy) {
+                notify("沒有敵人可以施放技能。", "#ffd1d1");
+                return;
+            }
+
+            // 消耗 MP
+            player.useMP(skill.mpCost);
+            updateBars();
+
+            // 停止連續戰鬥，避免重複觸發
+            setBattleButtonsDisabled(true);
+
+            // 🔥 根據技能類型處理效果
+            switch (skill.type) {
+                /** 🔥 攻擊類技能 **/
+                case "attack": {
+                    const dmg = Math.round(stats.atk * 1.0 + skill.power); // 攻擊力100% + 技能傷害
+                    notify(`🔥 施放 ${name}！造成 ${dmg} 點火焰傷害！`, "#fff8d6");
+
+                    animateAttack("player", () => {
+                        enemy.hp -= dmg;
+                        showDamageNumber("enemy", dmg);
+
+                        if (enemy.hp <= 0) {
+                            showBattleResult(enemy);
+                        } else {
+                            // 敵人反擊
+                            animateAttack("enemy", () => {
+                                const enemyDmg = Math.max(enemy.atk - stats.def, 1);
+                                player.takeDamage(enemyDmg);
+                                showDamageNumber("player", enemyDmg);
+
+                                if (player.currentHP <= 0) {
+                                    showPlayerDeath(enemy);
+                                } else {
+                                    updateBars();
+                                    setBattleButtonsDisabled(false);
+                                }
+                            });
+                        }
+                    });
+                    break;
+                }
+
+                /** 💚 治癒術 **/
+                case "heal": {
+                    const healAmt = Math.round(stats.maxHP * 0.1 + skill.power);
+                    player.heal(healAmt);
+                    notify(`施放 ${name}，恢復 ${healAmt} HP！`, "#d1ffd1");
+                    updateBars();
+                    setBattleButtonsDisabled(false);
+                    break;
+                }
+
+                /** 💪 強化 Buff **/
+                case "buff": {
+                    const originalAtk = stats.atk;
+                    const buffValue = Math.round(player.atk * 0.2);
+                    player.atk += buffValue;
+
+                    notify(`使用 ${name}，攻擊力提升 20%（持續 3 回合）`, "#fff8d6");
+
+                    // 3 回合後恢復
+                    setTimeout(() => {
+                        player.atk = originalAtk;
+                        notify("強化效果結束。", "#f5f5dc");
+                        savePlayer();
+                    }, 3000 * 3); // 模擬3回合效果
+
+                    savePlayer();
+                    updateBars();
+                    setBattleButtonsDisabled(false);
+                    break;
+                }
+
+                /** 💀 弱化 Debuff **/
+                case "debuff": {
+                    if (!enemy) return;
+                    const debuffValue = Math.round(enemy.atk * 0.2);
+                    enemy.atk -= debuffValue;
+                    notify(`🌀 ${name}！敵人攻擊力降低 20%（持續 3 回合）`, "#fff8d6");
+
+                    // 3 回合後恢復
+                    setTimeout(() => {
+                        enemy.atk += debuffValue;
+                        notify(`💫 ${enemy.name} 的攻擊恢復正常。`, "#fff8d6");
+                    }, 3000 * 3);
+
+                    updateBars();
+                    setBattleButtonsDisabled(false);
+                    break;
+                }
+
+                /** ❄️ 控場技能：冰凍術 **/
+                case "control": {
+                    const dmg = Math.round(stats.atk * 1.0 + skill.power);
+                    notify(`使用 ${name}！造成 ${dmg} 點冰凍傷害，敵人被冰凍 1 回合！`, "#fff8d6");
+
+                    animateAttack("player", () => {
+                        enemy.hp -= dmg;
+                        showDamageNumber("enemy", dmg);
+
+                        if (enemy.hp <= 0) {
+                            showBattleResult(enemy);
+                            return;
+                        }
+
+                        // 設置冰凍狀態
+                        enemy.isFrozen = true;
+                        savePlayer();
+
+                        setTimeout(() => {
+                            enemy.isFrozen = false;
+                            notify(`🧊 ${enemy.name} 解凍了！`, "#fff8d6");
+                        }, 3000);
+
+                        updateBars();
+                        setBattleButtonsDisabled(false);
+                    });
+                    break;
+                }
+
+                /** 其他技能 **/
+                default:
+                    notify(`技能 ${name} 還沒有實作效果`, "#ffd1d1");
+                    setBattleButtonsDisabled(false);
+                    break;
+            }
+
+            savePlayer();
+        }
+
+        function closeSkill() {
+            document.getElementById('skillOverlay').style.display = 'none';
+        }
+
 
         function openStatPanel() {
             const iframe = document.getElementById('gameFrame');
@@ -726,16 +1282,32 @@
     `;
 
             player.inventory.forEach(item => {
-                const base = itemDatabase[item.name];
-                if (!base) return; // 資料庫沒有就跳過
+                // ✅ 支援技能書：如果 itemDatabase 找不到，再從 skillDatabase 生成暫時資料
+                let base = itemDatabase[item.name];
+                if (!base && item.type === "skillBook") {
+                    const skill = skillDatabase[item.skillRef] || skillDatabase[item.name.replace("書", "")];
+                    if (skill) {
+                        base = {
+                            name: item.name,
+                            type: "skillBook",
+                            price: skill.price || item.price,
+                            content: `可學會技能：${item.skillRef || item.name.replace("書", "")}\n${skill.desc}`
+                        };
+                    }
+                }
+
+                // 若仍找不到則跳過
+                if (!base) return;
 
                 const row = table.insertRow();
                 row.insertCell().innerText = base.name;
                 row.insertCell().innerText = item.quantity;
 
-                // Tooltip
+                // Tooltip 顯示
                 row.onmouseenter = e => {
-                    tooltip.innerText = `${base.name}\n類型: ${base.type}\n說明: ${base.content || '無'}`;
+                    tooltip.innerText = `${base.name}
+類型: ${base.type === "skillBook" ? "技能書" : base.type}
+說明: ${base.content || '無'}`;
                     tooltip.style.left = e.pageX + 15 + 'px';
                     tooltip.style.top = e.pageY + 15 + 'px';
                     tooltip.style.display = 'block';
@@ -757,6 +1329,7 @@
                     cell.colSpan = 2;
                     cell.style.textAlign = 'center';
 
+                    // 🧪 消耗品
                     if (base.type === 'consumable') {
                         const useBtn = document.createElement('button');
                         useBtn.innerText = '使用';
@@ -771,22 +1344,57 @@
                         cell.appendChild(removeBtn);
                     }
 
+                    // ⚙️ 裝備
                     if (base.type === 'weapon' || base.type === 'armor') {
                         const isEquipped = (base.type === 'weapon' && player.equipment.weapon?.name === base.name)
                             || (base.type === 'armor' && player.equipment.armor?.name === base.name);
                         const equipBtn = document.createElement('button');
                         equipBtn.innerText = isEquipped ? '卸下' : '裝備';
                         equipBtn.className = `btn btn-sm ${isEquipped ? 'btn-warning' : 'btn-success'} me-2`;
-                        equipBtn.onclick = () => { if (isEquipped) player.unequip(base.type); else player.equip(base.name); updateBars(); loadInventory(); };
+                        equipBtn.onclick = () => {
+                            if (isEquipped) player.unequip(base.type);
+                            else player.equip(base.name);
+                            updateBars();
+                            loadInventory();
+                        };
                         cell.appendChild(equipBtn);
 
                         if (!isEquipped) {
                             const removeBtn = document.createElement('button');
                             removeBtn.innerText = '丟棄';
                             removeBtn.className = 'btn btn-sm btn-danger';
-                            removeBtn.onclick = () => { if (confirm(`丟棄 ${base.name}?`)) { player.removeItem(base.name); loadInventory(); } };
+                            removeBtn.onclick = () => {
+                                if (confirm(`丟棄 ${base.name}?`)) {
+                                    player.removeItem(base.name);
+                                    loadInventory();
+                                }
+                            };
                             cell.appendChild(removeBtn);
                         }
+                    }
+
+                    // 📘 技能書操作
+                    if (item.type === 'skillBook') {
+                        const learnBtn = document.createElement('button');
+                        learnBtn.innerText = '學習技能';
+                        learnBtn.className = 'btn btn-sm btn-primary me-2';
+                        learnBtn.onclick = () => {
+                            player.useItem(item.name);
+                            updateBars();
+                            loadInventory();
+                        };
+                        cell.appendChild(learnBtn);
+
+                        const removeBtn = document.createElement('button');
+                        removeBtn.innerText = '丟棄';
+                        removeBtn.className = 'btn btn-sm btn-danger';
+                        removeBtn.onclick = () => {
+                            if (confirm(`丟棄 ${item.name}?`)) {
+                                player.removeItem(item.name);
+                                loadInventory();
+                            }
+                        };
+                        cell.appendChild(removeBtn);
                     }
                 };
             });
@@ -1120,6 +1728,8 @@
                             <button class="btn btn-outline-secondary w-100 mb-3" onclick="parent.train()">訓練</button>
                             <button class="btn btn-outline-secondary w-100 mb-3" onclick="parent.talent()">天賦</button>
                             <button class="btn btn-outline-info w-100 mb-3" onclick="parent.openStatPanel()">人物加點</button>
+                            <button class="btn btn-outline-danger w-100 mb-3" onclick="parent.openCitySkill()">技能</button>
+
                         </div>
                     </div>
                 </div>
@@ -1583,19 +2193,49 @@
         function getRandomDrop(enemy, dropRate = 0.5) {
             if (!enemy.drops || enemy.drops.length === 0) return null;
 
-            const rate = Math.min(Math.max(dropRate, 0), 1); // 安全範圍 0~1
-            if (Math.random() >= rate) return null; // 判斷是否觸發掉寶
+            const rate = Math.min(Math.max(dropRate, 0), 1);
+            if (Math.random() >= rate) return null;
 
-            // 🎯 根據 rate 權重抽取物品
-            const weightedPool = enemy.drops.map(name => {
-                const item = itemDatabase[name];
-                return { name, weight: item?.rate || 10 }; // 沒 rate 預設 10
-            });
+            // 🎯 一定機率掉落技能書
+            const skillDropChance = 0.15; // 15% 掉技能書
+            if (Math.random() < skillDropChance) {
+                const availableSkills = Object.keys(skillDatabase).filter(
+                    s => !player.skills.some(ps => ps.name === s)
+                );
+                if (availableSkills.length > 0) {
+                    const weightedPool = availableSkills.map(name => ({
+                        name,
+                        weight: skillDatabase[name].rate || 10
+                    }));
 
-            // 計算總權重
+                    const total = weightedPool.reduce((a, b) => a + b.weight, 0);
+                    let roll = Math.random() * total;
+                    for (const entry of weightedPool) {
+                        roll -= entry.weight;
+                        if (roll <= 0) {
+                            const skill = skillDatabase[entry.name];
+                            // 技能書作為物品掉落
+                            const item = {
+                                name: entry.name + "書",
+                                type: "skillBook",
+                                price: skill.price,
+                                skillRef: entry.name
+                            };
+                            player.addItem(item);
+                            notify(`📘 掉落技能書：${entry.name}`, "#d1ffd1");
+                            return item;
+                        }
+                    }
+                }
+            }
+
+            // 🧱 原本物品掉落
+            const weightedPool = enemy.drops.map(name => ({
+                name,
+                weight: itemDatabase[name]?.rate || 10
+            }));
+
             const totalWeight = weightedPool.reduce((sum, i) => sum + i.weight, 0);
-
-            // 抽籤（隨機權重機率）
             let roll = Math.random() * totalWeight;
             for (const entry of weightedPool) {
                 roll -= entry.weight;
@@ -1606,8 +2246,9 @@
                 }
             }
 
-            return null; // 沒中獎
+            return null;
         }
+
 
 
 
@@ -1829,6 +2470,7 @@
         </html>`;
 
             updateBars();
+            loadBattleSkillBar();
         }
 
 
@@ -1860,6 +2502,11 @@
                 statPoints: player.statPoints,
                 totalStatPoints: player.totalStatPoints,
                 statBonus: player.statBonus,
+                skills: player.skills.map(skill => ({
+                    name: skill.name,
+                    lvl: skill.lvl || 1
+                })),
+                equipSkills: player.equipSkills || [],
             };
             localStorage.setItem('playerData', JSON.stringify(data));
         }
@@ -1888,6 +2535,11 @@
                 player.statPoints = data.statPoints ?? player.statPoints;
                 player.totalStatPoints = data.totalStatPoints ?? player.totalStatPoints;
                 player.statBonus = data.statBonus || { atk: 0, def: 0, hp: 0, mp: 0 };
+                player.skills = (data.skills || []).map(skill => ({
+                    name: skill.name,
+                    lvl: skill.lvl || 1
+                }));
+                player.equipSkills = data.equipSkills || [];
             }
             updateBars();
         }
@@ -1896,10 +2548,11 @@
 
         waitForJquery(() => {
             console.log(player);
-
             loadPlayer()
             // expadd()
             loadTown()
+            loadBattleSkillBar()
+            // player.addItem({ name: "火球術書" });
 
 
         });
