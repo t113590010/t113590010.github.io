@@ -5,45 +5,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>大二網頁設計</title>
-    <script src="../js/head.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
+
 
 </head>
 
-<body>
-    <script src="../js/main.js"></script>
-    <script>load_navbar("../web/")</script>
+<body class="jstest">
+    <script src="../js/script.js"></script>
+
     <div class="mx-auto  ">
         <h5>html</h5>
         <div class="row g-3">
             <div class="col-auto">
-                <button class="btn-secondary btn" onclick="ob(this)">input</button>
+                <button class="btn-secondary btn" id="ob1">input</button>
             </div>
             <div class="col-auto">
-                <button class="btn-secondary btn" onclick="ob(this)">label</button>
+                <button class="btn-secondary btn" id="ob2">label</button>
             </div>
             <div class="col-auto">
-                <button class="btn-secondary btn" onclick="ob(this)">div</button>
+                <button class="btn-secondary btn" id="ob3">div</button>
             </div>
             <div class="col-auto">
-                <button class="btn-secondary btn" onclick="ob(this)">button</button>
+                <button class="btn-secondary btn" id="ob4">button</button>
             </div>
             <div class="col-auto">
-                <button class="btn-secondary btn" onclick="ob(this)">form</button>
+                <button class="btn-secondary btn" id="ob5">form</button>
             </div>
         </div>
         <h5>css</h5>
         <div class="row g-3">
 
             <div class="col-auto">
-                <button class="btn-secondary btn" onclick="ob(this)">style</button>
+                <button class="btn-secondary btn" id="ob6">style</button>
             </div>
             <div class="col-auto">
-                <button class="btn-secondary btn" onclick="ob(this)">background-color</button>
+                <button class="btn-secondary btn" id="ob7">background-color</button>
             </div>
         </div>
         <div class="row my-2">
             <div class="col-12 col-md-9 col-lg-6 mb-5 ">
-                <div class="card  w-100  " style="height: 80vh;">
+                <div class="card  w-100  custom-card-8vh">
                     <div class="card-header">
                         <div class="row">
                             <div class="col-auto">
@@ -56,7 +57,7 @@
                                 <button class="btn btn-outline-primary btn-sm" id="table1">模板參考1</button>
                             </div>
                             <div class="col-auto">
-                                <button class="btn btn-outline-secondary btn-sm" id="cleartb" >清空</button>
+                                <button class="btn btn-outline-secondary btn-sm" id="cleartb">清空</button>
                             </div>
                         </div>
 
@@ -68,12 +69,12 @@
                 </div>
             </div>
             <div class="col col-12 col-md-9 col-lg-6">
-                <div class="card w-100 " style="height: 80vh" ;>
+                <div class="card w-100 custom-card-8vh">
                     <div class="card-header">
                         <h4>預覽</h4>
                     </div>
                     <div class="card-body">
-                        <iframe id="pv" style="width:100%;height:100%;border:1px solid #ccc;"></iframe>
+                        <iframe id="pv"></iframe>
                     </div>
                 </div>
             </div>
@@ -83,79 +84,8 @@
 
 
     <script>
-        function waitForJquery(cb) {
-            if (window.jQuery) cb();
-            else setTimeout(() => waitForJquery(cb), 50);
-        }
-
-        waitForJquery(() => {
-            const $iframe = $('#pv');
-            const $ta = $('#input');
-            const $pos = $('#pos');
-            const $table1 = document.documentElement.outerHTML
-            $('#table1').click(function () {
-                $ta.val($table1)
-                render();
-                updatePos();          
-            })
-            $('#cleartb').click(function () {
-                $ta.val('')
-                render();
-                updatePos();          
-            })
-            
-
-            function render() { $iframe[0].srcdoc = $ta.val(); }
-
-            function updatePos() {
-                const el = $ta[0];
-                $pos.text(el?.selectionStart ?? 0);
-            }
-
-            $ta.on('input', render);
-            $ta.on('input click keyup', updatePos);
 
 
-            window.ob = function (btn) {
-                const el = $ta[0];
-                const start = el.selectionStart;
-                const end = el.selectionEnd;
-                const text = $ta.val();
-                const label = btn.innerText.trim();
-
-                const htmlTags = ['input', 'div', 'button', 'label', 'style', 'script', 'form'];
-                const cssProps = ['background-color'];
-
-                let res = '';
-                if (htmlTags.includes(label)) {
-                    switch (label) {
-                        case 'input': res = `<input type="text" class="">`; break;
-                        case 'div': res = `<div class="">內容</div>`; break;
-                        case 'button': res = `<button type="button" class="">按鈕</button>`; break;
-                        case 'label': res = `<label class="">標籤</label>`; break;
-                        case 'style': res = `<style></style>`; break;
-                        case 'script': res = `<script> /script>`; break;
-                        case 'form': res = `<form action="" method="get">\n  \n</form>`; break;
-                    }
-                } else if (cssProps.includes(label)) {
-                    res = `${label}: ;`;
-                } else {
-                    return;
-                }
-
-
-                const newText = text.slice(0, start) + res + text.slice(end);
-                $ta.val(newText);
-                el.selectionStart = el.selectionEnd = start + res.length;
-                el.focus();
-
-                render();
-                updatePos();
-            };
-
-            render();
-            updatePos();
-        });
 
     </script>
 

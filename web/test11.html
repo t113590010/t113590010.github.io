@@ -5,27 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="../js/head.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 
-<body>
-    <script src="../js/main.js"></script>
-    <script>load_navbar("../web/")</script>
+<body class="test11">
+    <script src="../js/script.js"></script>
     <div class=" cent my-3 ">
-        <div class="card w-25">
+        <div class="card col-5 col-lg-3">
             <div class="card-body">
-                <div class="text-center">
+                <div class="text-center ">
                     <h3 id="title">1</h3>
-                    <img src="" style="width: 200px;" alt="" id="img">
+                    <img src="" class="img-width" alt="" id="img">
                     <div class="row mt-2">
                         <div class="col">
-                            <button class="btn btn-outline-secondary" onclick="prev()">Prev</button>
+                            <button class="btn btn-outline-secondary" id="prev" >Prev</button>
                         </div>
                         <div class="col">
                             <h4 id="name">1</h4>
                         </div>
                         <div class="col">
-                            <button class="btn btn-outline-secondary" onclick="next()">Next</button>
+                            <button class="btn btn-outline-secondary" id="next" >Next</button>
 
                         </div>
                     </div>
@@ -34,33 +33,7 @@
         </div>
     </div>
     <script>
-        const images = ['小丑1.png', '小丑2.png', '烏一一阿一.png']; 
-        let index = 0;
-
-        const titleEl = document.getElementById('title');
-        const imgEl = document.getElementById('img');
-        const nameEl = document.getElementById('name');
-
-        function updateDisplay() {
-            titleEl.innerText = index + 1;
-            imgEl.src = "../img/" + images[index];
-            nameEl.innerText = images[index];
-        }
-
-        function prev() {
-            index--;
-            if (index < 0) index = images.length - 1;
-            updateDisplay();
-        }
-
-        function next() {
-            index++;
-            if (index >= images.length) index = 0;
-            updateDisplay();
-        }
-
-        
-        updateDisplay();
+      
     </script>
 
 </body>

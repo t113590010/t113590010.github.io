@@ -2,91 +2,21 @@
 <html lang="en">
 
 
-<style>
-    .my-img {
-        border: 5px solid black;
-        border-radius: 10px;
-        filter: grayscale(50%) sepia(100%);
-    }
-
-    .img {
-        width: 230px;
-
-    }
-
-    .image-container {
-        position: relative;
-        width: 230px;
-        height: auto;
-        display: block;
-    }
-
-    .image-container img {
-        display: block;
-        width: 100%;
-        height: auto;
-        filter: blur(3px);
-
-    }
-
-    .overlay-text {
-        position: absolute;
-        bottom: 15%;
-        left: 50%;
-        transform: translateX(-50%);
-        color: black;
-        font-size: 18px;
-        text-align: center;
-
-    }
-
-    th {
-        font-size: 30px;
-        font-weight: bold;
-        background-color: gray;
-
-    }
-
-    table {
-        font-size: 30px;
-        border-collapse: collapse;
-
-    }
-
-    table td,
-    table th {
-        padding: 20px 40px;
-        border: 1px solid black;
-        text-align: center;
-    }
-
-    table td {
-        background-color: antiquewhite;
-
-        width: 200px;
-    }
-
-    table td[scope="row"] {
-        background-color: gray;
-        font-weight: bold;
-        width: 120px;
-    }
-</style>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>個人介紹網頁</title>
-    <script src="../js/head.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
 
 
 </head>
 
 <body>
-    <script src="../js/main.js"></script>
-    <script>load_navbar("../web/")</script>
-    <div class="cent mt-5">
+    <script src="../js/script.js"></script>
+
+    <div class="cent mt-5 test8">
         <div class="row">
             <div class="col-auto">
 
@@ -105,7 +35,7 @@
             </div>
         </div>
     </div>
-    <div class="cent mt-3">
+    <div class="cent mt-3 test8">
         <table cellpading="10" cellspacing="10">
             <thead>
                 <th colspan="4">標題</th>
@@ -122,26 +52,26 @@
                 </tr>
                 <tr>
                     <td scope="row">2~3pm</td>
-                    <td colspan="2" style="background-color: yellow;">awa</td>
-                    
-                    
+                    <td colspan="2" class="yellow">awa</td>
+
+
                     <!-- <td>睡覺</td> -->
                 </tr>
                 <tr>
                     <td scope="row">3~4pm</td>
-                    <td colspan="2" style="background-color: aqua;">awa</td>
-                    
-                    
+                    <td colspan="2" class="aqua">awa</td>
+
+
                     <!-- <td>睡覺</td> -->
                 </tr>
                 <tr>
-                    
-                    <td colspan="4" style="background-color:beige;">結尾</td>
-                    
-                    
+
+                    <td colspan="4" class="beige">結尾</td>
+
+
                     <!-- <td>睡覺</td> -->
                 </tr>
-                
+
             </tbody>
         </table>
     </div>

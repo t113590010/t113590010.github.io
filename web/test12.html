@@ -2,19 +2,13 @@
 <html lang="en">
 
 
-<style>
 
-</style>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>個人介紹網頁</title>
-    <script src="../js/head.js"></script>
-
-
-</head>
     <!-- 180 10 40 0
 
 10 50 40 100
@@ -23,146 +17,100 @@
 160 20 40 100
 
 black 你好 -->
-<body>
-    <script src="../js/main.js"></script>
-    <script>load_navbar("../web/")</script>
-    <div class="cent mt-5">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body class="test12">
+    <script src="../js/script.js"></script>
+    <div class="cent mt-2">
         <div class="card">
             <div class="card-body">
-
-                <canvas id="canvas" width="200" height="100" style="border: 1px solid;">a</canvas>
-                <br>
+                <div class="text-center">
+                    <canvas id="canvas" width="600" height="300" class="canvas-border">a</canvas>
+                </div>
                 <div class="row">
-                    <div class="col">
-                        <input type="text" class="form-control" id="input3" placeholder="blue" value="blue">
+                    <div class="col-7">
 
+                        <div class="row">
+                            <div class="col">
+                                <input type="text" class="form-control" id="input3" placeholder="color"
+                                    value="blue">
+
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control" id="input2"
+                                    placeholder="x y 半徑 角度" value="95 50 40 0">
+
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-outline-secondary" id="circle">圓圈</button>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col">
+                                <input type="text" class="form-control" id="input5" placeholder="color" value="blue">
+
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control" id="input4" placeholder="x y 寬 高"
+                                    value="10 10 90 90">
+
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-outline-secondary" id="rectDraw">畫矩形</button>
+                            </div>
+                        </div>
+
+                        <div class="row my-3">
+                            <div class="col">
+                                <input type="text" class="form-control" id="input0" placeholder="color" value="black">
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control" id="input1" placeholder="輸入文字" value="你好">
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control" id="input1_xy" placeholder="x y" value="30 50">
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-outline-secondary" id="text">Draw文字</button>
+                            </div>
+                        </div>
+                        <!-- <button class="btn btn-outline-secondary" id="changeColorRect">漸層色矩形</button> -->
+                        <div class="row">
+                            <div class="col">
+                                <input type="text" class="form-control" id="input6" placeholder="x1 y1 x2 y2" value="10 10 90 90">
+
+                            </div>
+                            <div class="col">
+
+                                <button class="btn btn-outline-secondary" id="drawline">畫線</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="col">
-                        <input type="text" class="form-control" id="input2" placeholder="95 50 40 0" value="95 50 40 0">
 
-                    </div>
-                    <div class="col">
-                        <button class="btn btn-outline-secondary" onclick="circle()">圓圈</button>
+                        <textarea name="" class="form-control custom-card-8 " id="result"></textarea>
+                        <div class="row text-center mt-2">
+                            <div class="col">
+                                <button id="prevStepBtn" class="btn btn-outline-secondary">上一步</button>
+
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-outline-danger" id="clearDraw">清除</button>
+
+                            </div>
+                            <div class="col">
+
+                                <button id="nextStepBtn" class="btn btn-outline-secondary">下一步</button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-                <div class="row mt-3">
-                    <div class="col">
-                        <input type="text" class="form-control" id="input5" placeholder="blue" value="blue">
-
-                    </div>
-                    <div class="col">
-                        <input type="text" class="form-control" id="input4" placeholder="10 10 100 100"
-                            value="10 10 100 100">
-
-                    </div>
-                    <div class="col">
-                        <button class="btn btn-outline-secondary" onclick="rectDraw()">畫矩形</button>
-                    </div>
-                </div>
-
-                <div class="row my-3">
-                    <div class="col">
-                        <input type="text" class="form-control" id="input0">
-                    </div>
-                    <div class="col">
-                        <input type="text" class="form-control" id="input1">
-                    </div>
-                    <div class="col">
-                        <button class="btn btn-outline-secondary" onclick="text()">Draw文字</button>
-                    </div>
-                </div>
-                <button class="btn btn-outline-danger" onclick="clearDraw()">清除</button>
-                <button class="btn btn-outline-secondary" onclick="changeColorRect()">漸層色矩形</button>
-                <button class="btn btn-outline-secondary" onclick="drawline()">畫線</button>
             </div>
         </div>
     </div>
-    <script>
 
-        var c = document.getElementById('canvas')
-        var ctx = c.getContext("2d")
-        // c.getContext("2d")
-        function clearDraw() {
-            ctx.clearRect(0, 0, 200, 200);
-        }
-
-        function circle() {
-            let data = document.getElementById('input2').value
-            let color = document.getElementById('input3').value
-            console.log(data);
-
-            ctx.beginPath();
-            let [x, y, r, start] = data.split(" ").map(Number);
-
-            ctx.arc(x, y, r, start, 2 * Math.PI);
-            ctx.fillStyle = color;
-            ctx.fill();
-            ctx.stroke();
-        }
-        function text() {
-            value = document.getElementById('input1').value
-            color = document.getElementById('input0').value
-            console.log(value);
-
-            ctx.font = "30px Arial"
-          ctx.fillStyle = color
-            ctx.fillText(value, 85, 60)
-        }
-
-        function rectDraw() {
-            let data = document.getElementById('input4').value;
-            let color = document.getElementById('input5').value;
-            let [x, y, w, h] = data.split(" ").map(Number);
-
-            ctx.globalAlpha = 0.5; 
-            ctx.fillStyle = color;
-            ctx.fillRect(x, y, w, h);
-            ctx.globalAlpha = 1.0; 
-
-        }
-
-        function changeColorRect() {
-            var grd = ctx.createLinearGradient(0, 0, 200, 0)
-            grd.addColorStop(0, "pink")
-            grd.addColorStop(0.5, "white")
-            grd.addColorStop(1, "blue")
-
-            ctx.fillStyle = grd
-            ctx.fillRect(0, 10, 150, 80)
-        }
-        console.log(c);
-
-        function drawline() {
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(100, 200);
-            ctx.stroke();
-        }
-
-
-        // var grd2 = ctx.createLinearGradient(0, 0, 200, 0)
-        // grd2.addColorStop(0, "blue")
-        // // grd.addColorStop(0.5,"white")
-        // // grd2.addColorStop(1,"white")
-        // ctx.fillStyle = grd2
-        // ctx.fillRect(10, 10, 150, 80)
-
-
-
-        // the outline rectangle
-
-        // ctx.lineWidth = 5;
-        // ctx.strokeRect(100, 10, 100, 100);
-
-
-
-
-
-
-
-
-
-    </script>
 </body>
 
 </html>

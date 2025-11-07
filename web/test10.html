@@ -5,15 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="../js/head.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
+
 </head>
 
-<body>
-    <script src="../js/main.js"></script>
-    <script>load_navbar("../web/")</script>
+<body class="test10">
+    <script src="../js/script.js"></script>
+
     <div class=" cent my-3 ">
-        <div class="card">
-            <div class="card-body">
+        <div class="card ">
+            <div class="card-body p-3">
 
 
 
@@ -36,56 +37,34 @@
                         </tr>
                     </tbody>
                 </table>
-            </div>
-            <div class="">
+                <div class="">
+                    <div class="mt-3">
 
-                <strong>table width</strong>
-
-                <button class="btn btn-outline-secondary" onclick="width(200)">200px</button>
-                <button class="btn btn-outline-secondary" onclick="width(500)">500px</button>
-                <br>
-                <strong>border</strong>
-
-                <button class="btn btn-outline-secondary" onclick="border(1)">1px</button>
-                <button class="btn btn-outline-secondary" onclick="border(10)">10px</button>
-                <button class="btn btn-outline-secondary" onclick="border(20)">20px</button>
-                <br>
-                <strong>table color</strong>
-
-                <button class="btn " style="background-color: aqua;" onclick="color('aqua')">color</button>
-                <button class="btn " style="background-color: gray;" onclick="color('gray')">color</button>
-                <button class="btn " style="background-color: greenyellow;" onclick="color('greenyellow')">color</button>
-                <br>
-                <strong>reset</strong>
-
-                <button class="btn btn-outline-secondary" onclick="reset_tb()">reset</button>
+                        <strong>table width</strong>
+                        <button class="btn btn-outline-secondary" id="width1">200px</button>
+                        <button class="btn btn-outline-secondary" id="width2">500px</button>
+                    </div>
+                    <div class="mt-3">
+                        <strong>border</strong>
+                        <button class="btn btn-outline-secondary" id="border1">1px</button>
+                        <button class="btn btn-outline-secondary" id="border2">10px</button>
+                        <button class="btn btn-outline-secondary" id="border3">20px</button>
+                    </div>
+                    <div class="mt-3">
+                        <strong>table color</strong>
+                        <button class="btn  aqua " id="color1">aqua</button>
+                        <button class="btn  gray " id="color2">gray</button>
+                        <button class="btn  greenyellow" id="color3">greenyellow</button>
+                    </div>
+                    <div class="mt-3">
+                        <strong>reset</strong>
+                        <button class="btn btn-outline-secondary" id="reset_tb">reset</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <script>
-        const table = document.getElementById("tb");
 
-
-
-        function width(value) {
-            table.style.width = value + "px";
-        }
-
-        function border(value) {
-            table.style.border = value + "px solid black";
-        }
-
-        function color(value) {
-            table.style.backgroundColor = value;
-        }
-
-        function reset_tb() {
-            table.style.width = "";
-            table.style.border = "";
-            table.style.backgroundColor = "";
-        }
-
-    </script>
 </body>
 
 </html>

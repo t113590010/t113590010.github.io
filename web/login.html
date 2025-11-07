@@ -1,101 +1,127 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>大二網頁設計</title>
-    <script src="../js/head.js"></script>
-
-
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 
+<body class="login_html">
+    <script src="../js/script.js" defer></script>
 
-<body>
-    <script src="../js/main.js"></script>
-    <script>load_navbar("../web/")</script>
     <div id="login">
-        <div class="cent d-flex align-items-center" style="height:80vh;">
-            <div class="card col-6 col-md-5 col-lg-3  my-auto" style="height: 400px;">
-
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col text-center">
-                              <h4>登入</h4>
-                            <sub>(隨便打，沒資料庫)</sub>
-                        </div>
-
-                    </div>
+        <div class="cent d-flex align-items-center custom-card-8vh">
+            <div class="card col-6 col-md-5 col-lg-3 my-auto">
+                <div class="card-header text-center">
+                    <h4>登入</h4>
+                    <button id="goSignup" class="btn btn-link w-100 mt-2">前往註冊</button>
                 </div>
                 <div class="card-body">
 
                     <div class="row my-4">
-                        <div class="col-auto  cent">
-                            <label for="acc">帳號</label>
-
+                        <div class="col-auto cent">
+                            <label for="login_acc">帳號</label>
                         </div>
                         <div class="col">
-                            <input type="text" class="input form-control" name="acc" id="acc">
-
+                            <input type="text" class="form-control" id="login_acc">
                         </div>
                     </div>
+
                     <div class="row mb-5">
                         <div class="col-auto cent">
-                            <label for="acc">密碼</label>
-
+                            <label for="login_ps">密碼</label>
                         </div>
                         <div class="col">
-                            <input type="password" class="input form-control" name="ps" id="ps">
-
+                            <input type="password" class="form-control" id="login_ps">
                         </div>
                     </div>
 
-                    <div class="fixed-bottom mb-3">
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-auto mx-auto">
-                                    <button class="btn btn-primary w-100" onclick="login()">登入</button>
-                                </div>
-                                <div class="col-auto mx-auto">
-                                    <button class="btn btn-secondary w-100" onclick="location=''">清除</button>
-                                </div>
-                            </div>
+                    <div class="row">
+                        <div class="col">
+                            <button id="loginBtn" class="btn btn-primary w-100">登入</button>
+                        </div>
+                        <div class="col">
+                            <button id="loginClear" class="btn btn-secondary w-100 ">清除</button>
                         </div>
                     </div>
-
 
                 </div>
             </div>
         </div>
     </div>
-    <div id="main">
-        <div class="cent " >
-            <div class="card col-9 mt-5">
-                <div class="card-header">
-
-                    <div class="row ">
-                        <div class="col text-center">
-
-                            <h4>使用者: <b id="user"></b> </h4>
-                        </div>
-                        <div class="col-auto right">
-                            <button class="btn btn-outline-danger " onclick="clearsession()">登出</button>
-                        </div>
 
 
-                    </div>
+    <div id="sign_up" >
+        <div class="cent d-flex align-items-center custom-card-8vh">
+            <div class="card col-6 col-md-5 col-lg-3 my-auto">
+                <div class="card-header text-center">
+                    <h4>註冊</h4>
+                    <button id="goLogin" class="btn btn-link w-100 mt-2">返回登入</button>
                 </div>
                 <div class="card-body">
-                    <h3 style="color: red;">注意這裡只是暫時資料，不會儲存到資料庫</h3>
-                    <h3>上次登入時間: <span id="logintime"></span></h3>
+
+                    <div class="row my-4">
+                        <div class="col-auto cent">
+                            <label for="signup_acc">帳號</label>
+                        </div>
+                        <div class="col">
+                            <input type="text" class="form-control" id="signup_acc">
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-auto cent">
+                            <label for="signup_ps">密碼</label>
+                        </div>
+                        <div class="col">
+                            <input type="password" class="form-control" id="signup_ps">
+                        </div>
+                    </div>
+
+                    <div class="row mt-5">
+                        <div class="col">
+                            <button id="signupBtn" class="btn btn-primary w-100">註冊</button>
+                        </div>
+                        <div class="col">
+                            <button id="signupClear" class="btn btn-secondary w-100 ">清除</button>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main">
+        <div class="cent">
+            <div class="card col-9 mt-5">
+
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col text-center">
+                            <h4>使用者：<b id="user"></b></h4>
+                        </div>
+                        <div class="col-auto right">
+                            <button id="logoutBtn" class="btn btn-outline-danger">登出</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <h3 class="text-red">注意這裡只是暫時資料，只會儲存在localStorage</h3>
+                    <h3>上次登入時間：<span id="logintime"></span></h3>
                     <hr>
 
                     <div class="card shadow">
                         <div class="card-header d-flex align-items-center">
                             <span>課表(點格子填寫 / 右鍵清除)</span>
                             <div class="ms-auto d-flex gap-2">
-                                <button id="clearTT" class="btn btn-sm btn-outline-danger">清空課表</button>                                
+                                <button id="clearTT" class="btn btn-sm btn-outline-danger">清空課表</button>
                             </div>
+                            </td>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -106,145 +132,15 @@
                     </div>
 
                 </div>
+
             </div>
         </div>
     </div>
+
     <script>
-        data = JSON.parse(localStorage.getItem('data'))
-        if (data == null) {
-            document.getElementById('main').style.display = 'none';
-        } else {
-            document.getElementById('login').style.display = 'none';
-
-        }
-
-        function waitForJquery(cb) {
-            if (window.jQuery) cb();
-            else setTimeout(() => waitForJquery(cb), 50);
-        }
-        function login() {
-            acc = $('#acc').val().trim()
-            ps = $('#ps').val().trim()
-            if (acc == "" || ps == "") {
-                alert("欄位不能為空，不過可隨便填")
-            } else {
-                data = {
-                    acc: acc,
-                    ps: ps,
-                    logintime: new Date().toLocaleString()
-                }
-                localStorage.setItem('data', JSON.stringify(data))
-                checkdata()
-
-            }
-
-        }
-        function clearsession() {
-            localStorage.clear()
-            location.reload()
-
-        }
-        function checkdata() {
-            data = JSON.parse(localStorage.getItem('data'))
-
-            if (data != null) {
-                $('#login').hide();
-                $('#main').show();
-                $('#user').text(data.acc);
-                $('#logintime').text(data.logintime);
-                initTimetable();
-                return true
-            } else {
-                $('#login').show();
-                $('#main').hide();
-                return false
-            }
-
-        }
-        waitForJquery(() => {
-            if (checkdata()) {
-
-            }
-
-
-        });
-
-        function ns(key) {
-            const u = JSON.parse(localStorage.getItem('data') || '{}');
-            return `user:${u.acc || 'guest'}:${key}`;
-        }
-
-
-        const days = ['一', '二', '三', '四', '五', '六', '日'];
-        const periods = 8;
-
-        function loadTT() { return JSON.parse(localStorage.getItem(ns('timetable')) || '{}'); }
-        function saveTT(obj) { localStorage.setItem(ns('timetable'), JSON.stringify(obj)); }
-
-        function buildTimetable() {
-            const data = loadTT();
-            const $tb = $('#timetable').empty();
-
-
-            $tb.append(`
-    <thead><tr>
-      <th style="width:70px">節次</th>
-      ${days.map(d => `<th>${d}</th>`).join('')}
-    </tr></thead>
-  `);
-
-
-            const $tbody = $('<tbody/>');
-            for (let p = 1; p <= periods; p++) {
-                const tr = $(`<tr><th>${p}</th></tr>`);
-                for (let d = 0; d < days.length; d++) {
-                    const key = `${d}-${p}`;
-                    let td = $(`<td data-d="${d}" data-p="${p}" 
-  style="min-width:120px;cursor:text;${(data[key] && data[key].trim() !== '') ? 'background-color: #E6F0FF;' : ''}"></td>`);
-
-                    td.text(data[key] || '');
-                    td.on('click', () => {
-                        const cur = td.text();
-                        const v = prompt(`填入課程（${days[d]} 第${p}節）`, cur);
-                        if (v === null) return;
-                        const s = v.trim();
-                        const obj = loadTT();
-                        if (s) { obj[key] = s; } else { delete obj[key]; }
-                        saveTT(obj); td.text(s);td.css('background-color', s ? '#E6F0FF' : '');;
-                    });
-
-
-                    td.on('contextmenu', (e) => {
-                        e.preventDefault();
-                        const obj = loadTT(); delete obj[key]; saveTT(obj); td.text(''),td.css('background-color','');;
-                    });
-
-                    tr.append(td);
-                }
-                $tbody.append(tr);
-            }
-            $tb.append($tbody);
-        }
-
-
-        function initTimetableUI() {
-            $('#clearTT').off('click').on('click', () => {
-                if (confirm('確定清空整張課表？')) {
-                    localStorage.removeItem(ns('timetable'));
-                    buildTimetable();
-                }
-            });
-        }
-
-
-        function initTimetable() {
-            initTimetableUI();
-            buildTimetable();
-        }
-
+    
     </script>
 
 </body>
-
 
 </html>
