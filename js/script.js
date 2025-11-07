@@ -389,11 +389,11 @@ if (game1) {
     ];
 
     function generateEnemy() {
-        const enemies = [
-            { name: "史萊姆", img: "../img/史萊姆.png", maxHP: 30, currentHP: 30, atk: 5, def: 0, rewardExp: 40, rewardCoin: [5, 15], drops: ["藥水", "鐵劍", "矛", "盾牌", "冰凍術", "再生術", "灼燒術"], lvl: [1, 10] },
-            { name: "哥布林", img: "../img/哥布林.png", maxHP: 200, currentHP: 60, atk: 15, def: 5, rewardExp: 200, rewardCoin: [10, 20], drops: ["斧刀", "鎖子甲", "中型回血藥水", "中型魔力藥水"], lvl: [5, 20] },
-            { name: "骷髏兵", img: "../img/骷髏頭.png", maxHP: 500, currentHP: 200, atk: 30, def: 10, rewardExp: 1000, rewardCoin: [15, 25], drops: ["神劍", "金鐘罩"], lvl: [10, 30] },
-            { name: "野蠻人", img: "../img/小丑1.png", maxHP: 1000, currentHP: 200, atk: 50, def: 20, rewardExp: 3000, rewardCoin: [15, 25], drops: ["神劍", "金鐘罩"], lvl: [30, 50] }
+      const enemies = [
+            { name: "史萊姆", img: "../img/史萊姆.png", maxHP: 30, currentHP: 30, atk: 5, def: 0, rewardExp: 40, rewardCoin: [50, 100], drops: ["藥水", "鐵劍", "矛", "盾牌", "冰凍術", "再生術", "灼燒術"], lvl: [1, 10] },
+            { name: "哥布林", img: "../img/哥布林.png", maxHP: 200, currentHP: 60, atk: 15, def: 5, rewardExp: 200, rewardCoin: [200, 300], drops: ["斧刀", "鎖子甲", "中型回血藥水", "中型魔力藥水"], lvl: [5, 20] },
+            { name: "骷髏兵", img: "../img/骷髏頭.png", maxHP: 500, currentHP: 200, atk: 30, def: 10, rewardExp: 1000, rewardCoin: [600, 800], drops: ["神劍", "金鐘罩"], lvl: [10, 30] },
+            { name: "野蠻人", img: "../img/小丑1.png", maxHP: 1000, currentHP: 200, atk: 50, def: 20, rewardExp: 3000, rewardCoin: [1000, 1200], drops: ["神劍", "金鐘罩"], lvl: [30, 50] }
         ];
 
         const enemy = { ...enemies[Math.floor(Math.random() * enemies.length)] };
@@ -3073,3 +3073,4 @@ function fa() {
 
     rand();
 }
+
