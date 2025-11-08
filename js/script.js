@@ -702,11 +702,11 @@ if (game1) {
     const itemDatabase = {
         藥水: { rate: 50, shop: true, price: 50, name: "藥水", type: "consumable", effect: { hp: 40 }, content: "回復40hp" },
         小型回血藥水: { rate: 50, shop: true, price: 50, name: "小型回血藥水", type: "consumable", effect: { hp: 40 }, content: "回復40hp" },
-        小型魔力藥水: { rate: 50, shop: true, price: 50, name: "小型魔力藥水", type: "consumable", effect: { hp: 40 }, content: "回復40mp" },
+        小型魔力藥水: { rate: 50, shop: true, price: 50, name: "小型魔力藥水", type: "consumable", effect: { mp: 40 }, content: "回復40mp" },
         中型回血藥水: { rate: 50, shop: true, price: 100, name: "中型回血藥水", type: "consumable", effect: { hp: 100 }, content: "回復100hp" },
-        中型魔力藥水: { rate: 50, shop: true, price: 100, name: "中型魔力藥水", type: "consumable", effect: { hp: 100 }, content: "回復100mp" },
+        中型魔力藥水: { rate: 50, shop: true, price: 100, name: "中型魔力藥水", type: "consumable", effect: { mp: 100 }, content: "回復100mp" },
         大型回血藥水: { rate: 50, shop: true, price: 500, name: "大型回血藥水", type: "consumable", effect: { hp: 500 }, content: "回復500hp" },
-        大型魔力藥水: { rate: 50, shop: true, price: 500, name: "大型魔力藥水", type: "consumable", effect: { hp: 500 }, content: "回復500mp" },
+        大型魔力藥水: { rate: 50, shop: true, price: 500, name: "大型魔力藥水", type: "consumable", effect: { mp: 500 }, content: "回復500mp" },
         寶箱: { rate: 50, price: 400, name: "寶箱", type: "consumable", content: "拿去商店賣值個好價錢" },
         矛: { rate: 30, shop: true, price: 300, name: "矛", type: "weapon", atk: 20, content: "+20攻擊力" },
         盾牌: { rate: 30, shop: true, price: 300, name: "盾牌", type: "armor", def: 15, content: "+15防禦力" },
@@ -3568,3 +3568,4 @@ function fa() {
 
     rand();
 }
+
