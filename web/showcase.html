@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>showcase 互動展示</title>
+    <link rel="stylesheet" href="../css/style.css">
+
+
+</head>
+
+<body class="showcase">
+    <script src="../js/script.js"></script>
+
+    <div class="cent">
+        <div class="card col-12 col-md-9 col-lg-9 m-5 shadow custom-card-8vh">
+            <div class="card-header">
+                <h3>Showcase 互動展示</h3>
+            </div>
+            <div class="card-body">
+                <h3>table變換</h3>
+                <div class="row">
+                    <div class="col">
+                        <table class="table  text-center" id="tb">
+                            <thead>
+                                <th>math</th>
+                                <th>english</th>
+                                <th>programming</th>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>90</td>
+                                    <td>60</td>
+                                    <td>80</td>
+                                </tr>
+                                <tr>
+                                    <td>80</td>
+                                    <td>86</td>
+                                    <td>98</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col">
+                        <div class="mt-3">
+
+                            <strong>table width</strong>
+                            <button class="btn btn-outline-secondary" id="width1">200px</button>
+                            <button class="btn btn-outline-secondary" id="width2">500px</button>
+                        </div>
+                        <div class="mt-3">
+                            <strong>border</strong>
+                            <button class="btn btn-outline-secondary" id="border1">1px</button>
+                            <button class="btn btn-outline-secondary" id="border2">10px</button>
+                            <button class="btn btn-outline-secondary" id="border3">20px</button>
+                        </div>
+                        <div class="mt-3">
+                            <strong>table color</strong>
+                            <button class="btn  aqua " id="color1">aqua</button>
+                            <button class="btn  gray " id="color2">gray</button>
+                            <button class="btn  greenyellow" id="color3">greenyellow</button>
+                        </div>
+                        <div class="mt-3">
+                            <strong>reset</strong>
+                            <button class="btn btn-outline-secondary" id="reset_tb">reset</button>
+                        </div>
+                    </div>
+
+                </div>
+                <hr>
+                <div class="row test8">
+
+                    <div class="col">
+
+                        <h2 class="text-center">Image 淡入淡出 效果</h2>
+                        <div class="cent">
+
+                            <div class="circle-container ">
+                                <img src="../img/小丑1.png" alt="原圖">
+                                <img src="../img/小丑2.png" alt="覆蓋圖" class="overlay">
+                                <div class="caption">小丑的笑容</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col text-center ">
+                        <h2 class="text-center">圖片切換</h2>
+                        <h3 id="title">1</h3>
+                        <img src="" class="img-width" alt="" id="img">
+                        <div class="row mt-2">
+                            <div class="col">
+                                <button class="btn btn-outline-secondary" id="prev">Prev</button>
+                            </div>
+                            <div class="col">
+                                <h4 id="name">1</h4>
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-outline-secondary" id="next">Next</button>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+
+                        <h2 class="text-center">點擊臉部可前往 關於我</h2>
+                        <div class="cent">
+
+                            <div class="map-section">
+                                <img src="../img/小丑1.png" usemap="#faceMap" alt="點擊圖片區域">
+                                <map name="faceMap">
+
+                                    <area shape="poly"
+                                        coords="120,60,150,70,170,120,150,160,120,170,90,150,80,110,90,70"
+                                        href="aboutme.html" alt="臉部區域">
+                                </map>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+
+    </script>
+</body>
+
+</html>
